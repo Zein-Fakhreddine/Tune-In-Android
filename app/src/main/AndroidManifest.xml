@@ -25,6 +25,9 @@
 
         </activity>
 
+        <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
+            android:value="true"/>
+
         <activity
             android:name=".SettingsSession"
             android:label="@string/SettingsSession" >

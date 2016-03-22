@@ -160,8 +160,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
-                    if (search.getText().toString().length() == 0)
-                        return false; //TODO: Do Somehting when the user doesnt input anything
                     searchTrack(search.getText().toString());
 
                     return true;
@@ -174,11 +172,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
-                    if (search.getText().toString().length() == 0)
-                        return; //TODO: Do Somehting when the user doesnt input anything
-
                     searchTrack(search.getText().toString());
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     dialog.cancel();
@@ -212,28 +206,26 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         switch (item.getItemId()) {
             case R.id.song_id:
                 showSongSearch();
-                return true;
+                break;
             case R.id.playlist_id:
 
-                return true;
-
+            break;
             case R.id.favorites_id:
                 loadFavorites();
-                return true;
+                break;
             case R.id.start_id:
                 if (manager.currentChosenTracks.size() == 0) {
                     error("No one has chose a song yet");
                     return true;
                 }
+
                 if (manager.isServer) {
                     startSong();
                 } else
                     error("You have to be the host to start the session!");
-                return true;
-
+                break;
             case R.id.settings_id:
                 this.startActivity(new Intent(this, SettingsSession.class));
-                return true;
         }
         return false;
     }
@@ -291,7 +283,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void restartClient() {
-        manager.currentChosenTracks.removeAll(manager.currentChosenTracks);
+        manager.currentChosenTracks.clear();
         manager.hasUserChoseSong = false;
         manager.hasUserVotedForSong = false;
         adapter = new SongListAdapter(

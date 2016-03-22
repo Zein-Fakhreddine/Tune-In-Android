@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,15 +23,13 @@ public class MainMenu extends Activity{
 
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activit_main_menu);
         initManager();
         initView();
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
-        StrictMode.setThreadPolicy(policy);
     }
 
     private void initManager(){
@@ -174,56 +171,60 @@ public class MainMenu extends Activity{
         nameDialog.show();
     }
 
-    private AlertDialog.Builder error(String errorMessage){
-        AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+    private AlertDialog.Builder error(final String errorMessage){
+        final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
         errorDialog.setTitle(errorMessage);
         errorDialog.setPositiveButton("OK", null);
         errorDialog.setNegativeButton("Cancel", null);
-        errorDialog.show();
+
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                errorDialog.show();
+            }
+        });
+
         return errorDialog;
     }
 
     private void startServer(final String username, final String sessionName){
-        // Get a handler that can be used to post to the main thread
-        android.os.Handler mainHandler = new android.os.Handler(this.getMainLooper());
 
-        Runnable myRunnable = new Runnable() {
-            @Override
+        Thread thread = new Thread() {
             public void run() {
                 manager.sessionName = sessionName;
                 manager.currentUser = new User(username);
                 manager.hostServer(manager.sessionName);
                 manager.isServer = true;
                 manager.sendUser(manager.getHostKey(), manager.currentUser);
-            } // This is your code
+                loadTuneIn();
+            }
         };
-        mainHandler.post(myRunnable);
+        thread.start();
 
-        this.startActivity(new Intent(this, TuneInSession.class));
-        finish();
+
     }
 
     private void joinServer(final String username,final String sessionKey){
-        if(!manager.checkServerExists(sessionKey)){
-            error("Can not find a server with the key: " + sessionKey);
-            return;
-        }
 
-        // Get a handler that can be used to post to the main thread
-        android.os.Handler mainHandler = new android.os.Handler(this.getMainLooper());
-
-        Runnable myRunnable = new Runnable() {
-            @Override
+        Thread thread = new Thread() {
             public void run() {
+                if(!manager.checkServerExists(sessionKey)){
+                    error("Can not find a server with the key: " + sessionKey);
+                    return;
+                }
                 manager.currentUser = new User(username);
                 manager.isServer = false;
                 manager.setServerKey(sessionKey);
                 manager.sendUser(manager.getHostKey(), manager.currentUser);
-            } // This is your code
+                loadTuneIn();
+            }
         };
-        mainHandler.post(myRunnable);
+        thread.start();
 
-        this.startActivity(new Intent(this, TuneInSession.class));
+    }
+
+    private void loadTuneIn(){
+        startActivity(new Intent(this, TuneInSession.class));
+        finish();
     }
 
     private boolean isNetworkAvailable() {
@@ -238,8 +239,10 @@ public class MainMenu extends Activity{
         boolean onlySpaces = true;
         for(int i = 0; i < text.length(); i++){
             char c = text.charAt(i);
-            if(c != ' ')
+            if(c != ' '){
                 onlySpaces = false;
+                break;
+            }
         }
 
         return onlySpaces;
