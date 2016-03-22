@@ -35,7 +35,6 @@ import static zein.net.tune_in.Manager.manager;
  */
 public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClickListener {
 
-
     private ListView trackView;
     private ProgressBar pbSearching;
     private ImageView imgSong;
