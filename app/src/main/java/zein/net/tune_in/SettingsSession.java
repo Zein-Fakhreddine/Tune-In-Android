@@ -65,7 +65,6 @@ public class SettingsSession extends Activity implements View.OnClickListener{
 
         final Runnable r = new Runnable() {
             public void run() {
-
                 if (!manager.isUserSearchingForUser && manager.isChoosing){
                     chooseUser();
                     manager.isChoosing = false;
@@ -76,7 +75,6 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         };
 
         handler.postDelayed(r, 500);
-
     }
 
     private void chooseUser(){
@@ -104,9 +102,8 @@ public class SettingsSession extends Activity implements View.OnClickListener{
             chooseDialog.show();
         } catch (WindowManager.BadTokenException e){
             e.printStackTrace();
-            Log.d("TUNEIN", "Probably not showing correct activity" +
-                    "");
         }
+
     }
 
     @Override
