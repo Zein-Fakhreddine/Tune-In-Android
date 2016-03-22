@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/playlist_id"
+        android:title="Add Playlist"
+    />
+
+    <item
+        android:id="@+id/song_id"
+        android:title="Search for Song"
+        />
+    <item
+        android:id="@+id/favorites_id"
+        android:title="Display Song from favorites"
+        />
+
+    <item
+        android:id="@+id/start_id"
+        android:title="Start Session"
+        />
+
+    <item
+        android:id="@+id/settings_id"
+        android:title="Settings"
+        />
+
+</menu>

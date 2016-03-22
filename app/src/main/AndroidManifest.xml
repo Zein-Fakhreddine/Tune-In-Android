@@ -1,0 +1,49 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="zein.net.tune_in">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".MainMenu"
+            android:label="@string/app_name" >
+            android:screenOrientation="portrait"
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".TuneInSession"
+            android:label="@string/TuneInSession" >
+
+        </activity>
+
+        <activity
+            android:name=".SettingsSession"
+            android:label="@string/SettingsSession" >
+        </activity>
+
+
+        <service
+            android:name=".TrackSearch"
+            android:exported="false"/>
+        <service
+            android:name=".PlayAudio"
+            android:exported="false"/>
+        <service android:name=".UserSearch"
+            android:exported="false"/>
+        <service android:name=".PlaylistSearch"
+            android:exported="false"/>
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+</manifest>

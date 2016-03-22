@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainMenu">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Session Name: "
+        android:id="@+id/txtSessionName"
+        android:layout_marginLeft="36dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="32dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etxtSessionName"
+        android:layout_marginTop="35dp"
+        android:layout_below="@+id/txtSessionName"
+        android:layout_alignLeft="@+id/txtSessionName"
+        android:layout_alignStart="@+id/txtSessionName"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Host Session"
+        android:id="@+id/btnHost"
+        android:layout_below="@+id/etxtSessionName"
+        android:layout_alignLeft="@+id/etxtSessionName"
+        android:layout_alignStart="@+id/etxtSessionName"
+        android:layout_marginTop="45dp"
+        android:onClick="onClick"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Key: "
+        android:id="@+id/txtKey"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/btnHost"
+        android:layout_alignStart="@+id/btnHost" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etxtAddress"
+        android:layout_below="@+id/txtKey"
+        android:layout_alignLeft="@+id/txtKey"
+        android:layout_alignStart="@+id/txtKey"
+        android:layout_marginTop="49dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Join Session"
+        android:id="@+id/btnJoin"
+        android:layout_below="@+id/etxtAddress"
+        android:layout_alignLeft="@+id/etxtAddress"
+        android:layout_alignStart="@+id/etxtAddress"
+        android:layout_marginTop="50dp"
+        android:layout_alignRight="@+id/txtSessionName"
+        android:layout_alignEnd="@+id/txtSessionName"
+        android:onClick="onClick"
+        />
+
+</RelativeLayout>

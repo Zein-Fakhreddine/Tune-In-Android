@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsSession">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Soundcloud:"
+        android:id="@+id/txtSoundcloud"
+        android:layout_marginLeft="42dp"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="36dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Link With Soundcloud"
+        android:id="@+id/btnLink"
+        android:layout_below="@+id/txtSoundcloud"
+        android:layout_alignLeft="@+id/txtSoundcloud"
+        android:layout_alignStart="@+id/txtSoundcloud"
+        android:layout_marginTop="40dp" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pbLoading"
+        android:visibility="invisible"
+        android:layout_alignBottom="@+id/btnLink"
+        android:layout_toRightOf="@+id/btnLink"
+        android:layout_toEndOf="@+id/btnLink" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Current Username: "
+        android:id="@+id/txtSoundcloudUsername"
+        android:layout_below="@+id/btnLink"
+        android:layout_alignLeft="@+id/btnLink"
+        android:layout_alignStart="@+id/btnLink" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Tune In: "
+        android:id="@+id/txtTuneIn"
+        android:layout_below="@+id/txtSoundcloudUsername"
+        android:layout_alignLeft="@+id/txtSoundcloudUsername"
+        android:layout_alignStart="@+id/txtSoundcloudUsername"
+        android:layout_marginTop="43dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Backup Playlist"
+        android:id="@+id/btnBackupPlaylist"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/txtTuneIn"
+        android:layout_alignStart="@+id/txtTuneIn" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Current Playlist: "
+        android:id="@+id/txtCurrentPlaylist"
+        android:layout_below="@+id/btnBackupPlaylist"
+        android:layout_alignLeft="@+id/btnBackupPlaylist"
+        android:layout_alignStart="@+id/btnBackupPlaylist" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose Randomly"
+        android:id="@+id/swChooseRandomly"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/btnLink"
+        android:layout_toEndOf="@+id/btnLink" />
+
+</RelativeLayout>

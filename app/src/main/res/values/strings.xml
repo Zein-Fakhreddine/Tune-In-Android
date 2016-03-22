@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Tune-In</string>
+    <string name="TuneInSession">Tune In</string>
+    <string name="add_song">Add Song</string>
+    <string name="SettingsSession">Settings</string>
+</resources>
