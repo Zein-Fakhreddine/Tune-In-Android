@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,12 +34,12 @@ import static zein.net.tune_in.Manager.manager;
 /**
  * Created by Zein's on 2/6/2016.
  */
-public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClickListener {
+public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
 
     private ListView trackView;
     private ProgressBar pbSearching;
-    private ImageView imgSong;
+    private ImageView imgSong, imgPlayPause;
 
     //Tracks
     private ArrayAdapter<Track> adapter;
@@ -65,6 +66,10 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         TextView txtKey = (TextView) findViewById(R.id.txtKey);
         txtKey.setText("KEY: " + manager.getHostKey());
         imgSong = (ImageView) findViewById(R.id.imgSong);
+        imgPlayPause = (ImageView) findViewById(R.id.imgPlayPause);
+        imgPlayPause.setOnClickListener(this);
+        if(!manager.isServer)
+            imgPlayPause.setVisibility(View.INVISIBLE);
         adapter = new SongListAdapter(Manager.manager.currentSearchTracks);
         trackView.setAdapter(adapter);
     }
@@ -75,13 +80,15 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         final Runnable r = new Runnable() {
             public void run() {
                 adapter.notifyDataSetChanged();
-                if (!manager.isUserSearching) {
+                if (!manager.isUserSearching)
                     pbSearching.setVisibility(View.INVISIBLE);
-                }
+                if (manager.hasUserChoseSong)
+                    pbSearching.setVisibility((manager.currentChosenTracks.size() == 0) ? View.VISIBLE : View.INVISIBLE);
 
-                if (manager.restart) {
-                    manager.restart = false;
-                    restartClient();
+                if(manager.mediaPlayer != null){
+                    if(manager.mediaPlayer.isPlaying())
+
+                    imgPlayPause.setImageBitmap((manager.mediaPlayer.isPlaying()) ? BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause) : BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_play));
                 }
 
                 handler.postDelayed(this, 500);
@@ -94,24 +101,28 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             public void run() {
                 while (true) {
                     if (manager.hasUserChoseSong) {
-                        if(!manager.isServer){
+                        if (!manager.isServer) {
                             String message = manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
-                            Log.d("TUNEIN", message);
-                            if (message.startsWith("restart"))
-                                manager.restart = true;
+                            Log.d("TUNEIN", "The message is: " + message);
+                            if (message.equals("restart"))
+                                restartClient();
                         }
                         String[] info = manager.getChosenSongs(manager.getHostKey()).split(",");
-                        Log.d("TUNEIN", "Checking for song");
+
                         for (int i = 0; i < info.length; i++) {
                             int trackId = Integer.parseInt(info[i]);
-
+                            Log.d("TUNEIN", "Found track with id: " + trackId);
                             if (!(trackId == -1 || trackId == 0)) {
                                 if (!hasTrackId(trackId)) {
-                                    Log.d("TUNEIN", "Creating new track in chosen tracks");
                                     manager.currentChosenTracks.add(new Track(SoundcloudSearch.getTrack("7c89e606e88c94ff47bfd84357e5e9f4", trackId)));
                                 }
                             }
                         }
+                    }
+                    try{
+                        Thread.sleep(500);
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
             }
@@ -210,7 +221,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 break;
             case R.id.playlist_id:
 
-            break;
+                break;
             case R.id.favorites_id:
                 loadFavorites();
                 break;
@@ -243,7 +254,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             error("No chosen songs to play");
             return;
         }
-        if(manager.mediaPlayer != null && manager.mediaPlayer.isPlaying()){
+        if (manager.mediaPlayer != null && manager.mediaPlayer.isPlaying()) {
             error("A song is already playing");
             return;
         }
@@ -257,7 +268,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         manager.mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                if(manager.currentPlayingTrack != null){
+                if (manager.currentPlayingTrack != null) {
                     imgSong.setImageBitmap(manager.currentPlayingTrack.getTrackBitmap());
                     imgSong.getLayoutParams().width = 200;
                     imgSong.getLayoutParams().height = 200;
@@ -271,6 +282,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         this.startService(playAudio);
 
         pbSearching.setVisibility(View.VISIBLE);
+
         restart();
     }
 
@@ -284,13 +296,17 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void restartClient() {
-        manager.currentChosenTracks.clear();
-        manager.hasUserChoseSong = false;
-        manager.hasUserVotedForSong = false;
-        adapter = new SongListAdapter(
-                manager.currentSearchTracks);
-        trackView.setAdapter(adapter);
-        registerListCallBack();
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                manager.currentChosenTracks.clear();
+                manager.hasUserChoseSong = false;
+                manager.hasUserVotedForSong = false;
+                adapter = new SongListAdapter(
+                        manager.currentSearchTracks);
+                trackView.setAdapter(adapter);
+                registerListCallBack();
+            }
+        });
     }
 
     @Override
@@ -341,6 +357,18 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 }
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(v.getId() == imgPlayPause.getId()){
+            if(manager.mediaPlayer != null){
+                if(manager.mediaPlayer.isPlaying())
+                    manager.mediaPlayer.pause();
+                else
+                    manager.mediaPlayer.start();
+            }
+        }
     }
 
     private void voteForSong(final int position) {

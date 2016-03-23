@@ -39,6 +39,7 @@ public class PlayAudio extends IntentService {
         Track trackToPlay = null;
         for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
             Track track = manager.currentChosenTracks.get(i);
+            Log.d("TUNEIN", "Song:" + track.getTrackTitle() + " has: " + track.getVotes() + "votes");
             if (trackToPlay == null || track.getVotes() > trackToPlay.getVotes())
                 trackToPlay = track;
         }
@@ -55,7 +56,6 @@ public class PlayAudio extends IntentService {
 
         manager.hasUserChoseSong = false;
         manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
-        manager.currentChosenTracks.removeAll(manager.currentChosenTracks);
-
+        manager.currentChosenTracks.clear();
     }
 }

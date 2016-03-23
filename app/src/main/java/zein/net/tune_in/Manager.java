@@ -73,8 +73,8 @@ public class Manager {
         hostKey = getData("/host&name=" + convertToSendableString(serverName)).toString();
     }
 
-    public void sendUser(String serverKey, User user){
-       sendData("/user&name=" + convertToSendableString(user.getUserName()) + "&key=" + serverKey);
+    public String sendUser(String serverKey, User user){
+       return getData("/user&name=" + convertToSendableString(user.getUserName()) + "&key=" + serverKey).toString();
     }
 
     public void sendUsersChosenSong(String serverKey, User user){

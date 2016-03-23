@@ -23,6 +23,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/etxtSessionName"
         android:layout_marginTop="35dp"
+        android:singleLine="true"
+        android:maxLength="20"
         android:layout_below="@+id/txtSessionName"
         android:layout_alignLeft="@+id/txtSessionName"
         android:layout_alignStart="@+id/txtSessionName"
@@ -55,6 +57,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/etxtAddress"
+        android:singleLine="true"
+        android:maxLength="5"
         android:layout_below="@+id/txtKey"
         android:layout_alignLeft="@+id/txtKey"
         android:layout_alignStart="@+id/txtKey"
@@ -75,5 +79,24 @@
         android:layout_alignEnd="@+id/txtSessionName"
         android:onClick="onClick"
         />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pbLoading"
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text=""
+        android:id="@+id/txtLoadMessage"
+        android:layout_alignBottom="@+id/pbLoading"
+        android:layout_toLeftOf="@+id/pbLoading"
+        android:layout_toStartOf="@+id/pbLoading" />
 
 </RelativeLayout>
