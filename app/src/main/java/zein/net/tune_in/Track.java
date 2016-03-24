@@ -30,7 +30,6 @@ public class Track {
         try{
             JSONObject obj = new JSONObject(trackJSON);
             trackTitle = obj.getString("title");
-            //trackArtist = obj.getString("username");
             artWorkURL = obj.getString("artwork_url");
             playbackCount = obj.getInt("playback_count");
             trackId = obj.getInt("id");

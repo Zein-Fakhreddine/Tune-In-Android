@@ -2,6 +2,7 @@ package zein.net.tune_in;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -84,12 +85,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 if (manager.hasUserChoseSong)
                     pbSearching.setVisibility((manager.currentChosenTracks.size() == 0) ? View.VISIBLE : View.INVISIBLE);
 
-                if(manager.mediaPlayer != null){
-                    if(manager.mediaPlayer.isPlaying())
-
-                    imgPlayPause.setImageBitmap((manager.mediaPlayer.isPlaying()) ? BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause) : BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_play));
-                }
-
                 handler.postDelayed(this, 500);
             }
         };
@@ -98,7 +93,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
         Thread thread = new Thread() {
             public void run() {
-                while (true) {
+                while (manager != null) {
                     if (manager.hasUserChoseSong) {
                         if (!manager.isServer) {
                             String message = manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
@@ -130,7 +125,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         thread.start();
     }
 
-
     private boolean hasTrackId(int trackId) {
         boolean hasTrackId = false;
         for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
@@ -159,7 +153,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         }
 
         final AlertDialog.Builder searchDialog = new AlertDialog.Builder(this);
-
         searchDialog.setTitle("Search for a song");
         //Set up the text search
         final EditText search = new EditText(this);
@@ -172,14 +165,15 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
                     searchTrack(search.getText().toString());
-
                     return true;
                 }
                 return false;
             }
         });
+
+
         // Set up the buttons
-        searchDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        searchDialog.setPositiveButton("SEARCH", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
@@ -235,19 +229,57 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 } else
                     error("You have to be the host to start the session!");
                 break;
+
+            case R.id.end_id:
+                //manager.sendExit(manager.getHostKey());
+                endSession();
+                break;
             case R.id.settings_id:
                 this.startActivity(new Intent(this, SettingsSession.class));
+                break;
         }
         return false;
     }
 
+    private void endSession(){
+        AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+        errorDialog.setTitle("Are you sure you want to end the session");
+        errorDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                leaveSession();
+            }
+        });
+        errorDialog.setNegativeButton("No", null);
+        errorDialog.show();
+    }
+
+    private void leaveSession(){
+        if(manager.mediaPlayer != null)
+          manager.mediaPlayer.stop();
+        this.startActivity(new Intent(this, MainMenu.class));
+    }
+
     private void loadFavorites() {
         if (manager.currentUser.getSoundcloudUser() == null) {
-            error("You have not linked your Soundcloud acount yet");
-            return;
+            AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+            errorDialog.setTitle("You have not linked your Soundcloud account yet.");
+            errorDialog.setPositiveButton("Link", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    loadSettings();
+                }
+            });
+            errorDialog.setNegativeButton("Cancel", null);
+            errorDialog.show();
         }
     }
 
+    private void loadSettings(){
+        Intent settingsSession = new Intent(this, SettingsSession.class);
+        settingsSession.putExtra("Link", true);
+        this.startActivity(settingsSession);
+    }
     private void startSong() {
         if (manager.currentChosenTracks.size() == 0) {
             error("No chosen songs to play");
@@ -275,6 +307,8 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 }
             }
         });
+
+        imgPlayPause.setImageBitmap(BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause));
         Intent playAudio = new Intent(this, PlayAudio.class);
 
         playAudio.setData(Uri.parse(""));
@@ -366,6 +400,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                     manager.mediaPlayer.pause();
                 else
                     manager.mediaPlayer.start();
+                imgPlayPause.setImageBitmap((manager.mediaPlayer.isPlaying()) ? BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause) : BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_play));
             }
         }
     }
@@ -432,7 +467,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 TextView trackName = (TextView) itemView.findViewById(R.id.txtSongName);
                 trackName.setText(currentTrack.getTrackTitle());
                 TextView trackTime = (TextView) itemView.findViewById(R.id.txtTime);
-                trackTime.setText("3");
+                trackTime.setText("Votes: "+ currentTrack.getVotes());
             } else {
                 if (Manager.manager.currentSearchTracks.size() == 0)
                     return itemView;
@@ -447,7 +482,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 TextView trackName = (TextView) itemView.findViewById(R.id.txtSongName);
                 trackName.setText(currentTrack.getTrackTitle());
                 TextView trackTime = (TextView) itemView.findViewById(R.id.txtTime);
-                trackTime.setText("2");
+                trackTime.setText("Playback count: " + currentTrack.getPlaybackCount());
             }
             return itemView;
         }

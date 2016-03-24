@@ -170,6 +170,7 @@ public class Manager {
             int responseCode = con.getResponseCode();
             System.out.println("Response Code : " + responseCode);
 
+            /*
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
             String inputLine;
@@ -179,7 +180,7 @@ public class Manager {
                 response.append(inputLine);
 
             in.close();
-
+            */
         } catch(Exception e){
             e.printStackTrace();
         }

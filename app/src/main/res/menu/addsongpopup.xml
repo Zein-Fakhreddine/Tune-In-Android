@@ -20,6 +20,10 @@
         />
 
     <item
+        android:id="@+id/end_id"
+        android:title="Stop Session"
+        />
+    <item
         android:id="@+id/settings_id"
         android:title="Settings"
         />

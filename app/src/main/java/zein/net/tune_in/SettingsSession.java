@@ -43,6 +43,11 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         initView();
         initManager();
         updateList();
+        Bundle extras = getIntent().getExtras();
+        if(extras != null){
+            if(extras.getBoolean("Link"))
+                showSearchDialog();
+        }
     }
 
     private void initView(){
