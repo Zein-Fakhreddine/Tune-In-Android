@@ -24,6 +24,7 @@ public class Track {
     private int votes;
     private Bitmap trackBitMap;
     private boolean isStreamable;
+    
     public Track(String trackJSON){
         votes = 0;
         try{
@@ -38,7 +39,6 @@ public class Track {
             e.printStackTrace();
             Log.d("TUNEIN", "error creating track");
         }
-
         trackBitMap = getTrackBitMap();
     }
 

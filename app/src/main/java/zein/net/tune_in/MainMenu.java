@@ -19,8 +19,7 @@ import static zein.net.tune_in.Manager.manager;
  * Created by Zein's on 2/2/2016.
  */
 public class MainMenu extends Activity{
-
-
+    
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
 

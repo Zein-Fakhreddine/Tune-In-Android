@@ -23,6 +23,7 @@ public class TrackSearch extends IntentService {
 
         Log.d("TUNEIN", "Data: " + dataString);
         ArrayList<String> strings = SoundcloudSearch.getTracks("7c89e606e88c94ff47bfd84357e5e9f4", dataString, 10);
+
         ArrayList<Track> tracks = new ArrayList<>();
         for(int i = 0; i < strings.size(); i++){
             String s = strings.get(i);
