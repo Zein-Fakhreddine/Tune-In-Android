@@ -3,4 +3,8 @@
     <string name="TuneInSession">Tune In</string>
     <string name="add_song">Add Song</string>
     <string name="SettingsSession">Settings</string>
+    <string name="plays_or_pause_s_the_current_song">Plays or pause\'s the current song</string>
+    <string name="the_image_of_the_current_song">The image of the current song</string>
+    <string name="key">Key:</string>
+    <string name="session_name">Session name:</string>
 </resources>

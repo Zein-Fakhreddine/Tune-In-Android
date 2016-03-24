@@ -35,6 +35,7 @@ public class Track {
             playbackCount = obj.getInt("playback_count");
             trackId = obj.getInt("id");
             isStreamable = obj.getBoolean("streamable");
+            votes = 0;
         } catch(JSONException e){
             e.printStackTrace();
             Log.d("TUNEIN", "error creating track");

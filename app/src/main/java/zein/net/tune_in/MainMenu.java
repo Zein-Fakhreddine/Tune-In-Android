@@ -13,6 +13,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import static zein.net.tune_in.Manager.manager;
 /**
@@ -22,6 +24,8 @@ public class MainMenu extends Activity{
     
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
+    private TextView txtLoadMessage;
+    private ProgressBar pbLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,8 @@ public class MainMenu extends Activity{
         btnJoin = (Button) findViewById(R.id.btnJoin);
         txtKey = (EditText) findViewById(R.id.etxtAddress);
         txtName = (EditText) findViewById(R.id.etxtSessionName);
+        txtLoadMessage = (TextView) findViewById(R.id.txtLoadMessage);
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
     }
 
     public void onClick(View v) {
@@ -189,36 +195,67 @@ public class MainMenu extends Activity{
 
         Thread thread = new Thread() {
             public void run() {
-                manager.sessionName = sessionName;
-                manager.currentUser = new User(username);
-                manager.hostServer(manager.sessionName);
-                manager.isServer = true;
-                manager.sendUser(manager.getHostKey(), manager.currentUser);
-                loadTuneIn();
+                try{
+                    manager.sessionName = sessionName;
+                    manager.currentUser = new User(username);
+                    setLoadMessage("Attempting to host server");
+                    manager.hostServer(manager.sessionName);
+                    manager.isServer = true;
+                    setLoadMessage("Setting up server");
+                    manager.sendUser(manager.getHostKey(), manager.currentUser);
+                    loadTuneIn();
+                } catch (Exception e){
+                    e.printStackTrace();
+                    error("There was an error trying to host a server");
+                }
             }
         };
         thread.start();
-
-
     }
 
     private void joinServer(final String username,final String sessionKey){
 
         Thread thread = new Thread() {
             public void run() {
+                setLoadMessage("Checking if server exists");
                 if(!manager.checkServerExists(sessionKey)){
                     error("Can not find a server with the key: " + sessionKey);
+                    cancelLoading();
                     return;
                 }
                 manager.currentUser = new User(username);
                 manager.isServer = false;
                 manager.setServerKey(sessionKey);
-                manager.sendUser(manager.getHostKey(), manager.currentUser);
-                loadTuneIn();
+                setLoadMessage("Joining the server");
+                String code = manager.sendUser(manager.getHostKey(), manager.currentUser);
+                if(code.equals("gg"))
+                    loadTuneIn();
+                else{
+                    error((code.equals("ht")) ? "This username has already been taken" : "there was an error added the user");
+                    cancelLoading();
+                }
             }
         };
         thread.start();
+    }
 
+    private void setLoadMessage(final String message){
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                if(pbLoading.getVisibility() == View.INVISIBLE)
+                    pbLoading.setVisibility(View.VISIBLE);
+                txtLoadMessage.setText(message);
+            }
+        });
+    }
+
+    private void cancelLoading(){
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                pbLoading.setVisibility(View.INVISIBLE);
+                txtLoadMessage.setText("");
+            }
+        });
     }
 
     private void loadTuneIn(){
