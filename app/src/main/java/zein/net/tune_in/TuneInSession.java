@@ -2,7 +2,6 @@ package zein.net.tune_in;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -32,9 +31,6 @@ import java.util.ArrayList;
 
 import static zein.net.tune_in.Manager.manager;
 
-/**
- * Created by Zein's on 2/6/2016.
- */
 public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
     private ListView trackView;
@@ -94,7 +90,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         Thread thread = new Thread() {
             public void run() {
                 while (manager != null) {
-                    if (manager.hasUserChoseSong) {
+                    if (manager.hasUserChoseSong || manager.isServer) {
                         if (!manager.isServer) {
                             String message = manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
                             Log.d("TUNEIN", "The message is: " + message);
@@ -112,6 +108,21 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                                 }
                             }
                         }
+
+                        String[] votesIds = manager.getVotes(manager.getHostKey()).split(",");
+                        for (int i = 0; i < votesIds.length; i++) {
+                            try{
+                                int voteId = Integer.parseInt(votesIds[i]);
+                                for (int x = 0; x < manager.currentChosenTracks.size(); x++) {
+                                    Track track = manager.currentChosenTracks.get(x);
+                                    if (track.getTrackId() == voteId)
+                                        track.addVote();
+                                }
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                     }
                     try{
                         Thread.sleep(500);
@@ -258,6 +269,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         if(manager.mediaPlayer != null)
           manager.mediaPlayer.stop();
         this.startActivity(new Intent(this, MainMenu.class));
+        finish();
     }
 
     private void loadFavorites() {

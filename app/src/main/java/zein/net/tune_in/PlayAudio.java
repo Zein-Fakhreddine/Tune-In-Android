@@ -6,9 +6,7 @@ import android.util.Log;
 
 import static zein.net.tune_in.Manager.manager;
 
-/**
- * Created by Zein's on 3/18/2016.
- */
+
 public class PlayAudio extends IntentService {
     public PlayAudio(){
         super("playaudio");
@@ -21,21 +19,6 @@ public class PlayAudio extends IntentService {
     }
 
     private void startSong(){
-        Log.d("TUNEIN", "Starting new song");
-        String[] votesIds = manager.getVotes(manager.getHostKey()).split(",");
-        for (int i = 0; i < votesIds.length; i++) {
-            try{
-                int voteId = Integer.parseInt(votesIds[i]);
-                for (int x = 0; x < manager.currentChosenTracks.size(); x++) {
-                    Track track = manager.currentChosenTracks.get(x);
-                    if (track.getTrackId() == voteId)
-                        track.addVote();
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-        }
         Track trackToPlay = null;
         for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
             Track track = manager.currentChosenTracks.get(i);
