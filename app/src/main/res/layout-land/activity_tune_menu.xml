@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    tools:context=".TuneInSession">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/session_name"
+        android:id="@+id/txtSessionName"
+        android:layout_marginTop="29dp"
+        android:layout_marginLeft="31dp"
+        android:layout_marginStart="31dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lstTracks"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/txtSessionName"
+        android:layout_above="@+id/imgAddSong"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgAddSong"
+        android:background="@null"
+        android:src="@mipmap/ic_launcher"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="showAddSongPopup"
+        android:contentDescription="@string/add_song" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/key"
+        android:id="@+id/txtKey"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/imgAddSong"
+        android:layout_toStartOf="@+id/imgAddSong" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pbSearching"
+        android:layout_below="@+id/lstTracks"
+        android:layout_toLeftOf="@+id/imgAddSong"
+        android:layout_toStartOf="@+id/imgAddSong"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgSong"
+        android:src="@mipmap/ic_launcher"
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:contentDescription="@string/the_image_of_the_current_song" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgPlayPause"
+        android:src="@mipmap/ic_play"
+        android:layout_alignTop="@+id/imgSong"
+        android:layout_toRightOf="@+id/imgSong"
+        android:layout_toEndOf="@+id/imgSong"
+        android:contentDescription="@string/plays_or_pause_s_the_current_song" />
+
+</RelativeLayout>

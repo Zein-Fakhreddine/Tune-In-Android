@@ -41,6 +41,10 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     private ArrayAdapter<Track> adapter;
     private boolean doubleBackToExitPressedOnce;
 
+    //Threads
+    private Thread updateThread;
+    private boolean runThread;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +75,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void update() {
+        runThread = true;
         final android.os.Handler handler = new android.os.Handler();
 
         final Runnable r = new Runnable() {
@@ -87,25 +92,25 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
         handler.postDelayed(r, 500);
 
-        Thread thread = new Thread() {
+        updateThread  = new Thread() {
             public void run() {
-                while (manager != null) {
+                while (runThread && manager != null) {
                     if (manager.hasUserChoseSong || manager.isServer) {
+                        String[] info = manager.getChosenSongs(manager.getHostKey()).split(",");
                         if (!manager.isServer) {
                             String message = manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
                             Log.d("TUNEIN", "The message is: " + message);
                             if (message.equals("restart"))
                                 restartClient();
                         }
-                        String[] info = manager.getChosenSongs(manager.getHostKey()).split(",");
 
                         for (int i = 0; i < info.length; i++) {
                             int trackId = Integer.parseInt(info[i]);
                             Log.d("TUNEIN", "Found track with id: " + trackId);
                             if (!(trackId == -1 || trackId == 0)) {
-                                if (!hasTrackId(trackId)) {
+                                if (!hasTrackId(trackId))
                                     manager.currentChosenTracks.add(new Track(SoundcloudSearch.getTrack("7c89e606e88c94ff47bfd84357e5e9f4", trackId)));
-                                }
+
                             }
                         }
 
@@ -115,9 +120,12 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                                 int voteId = Integer.parseInt(votesIds[i]);
                                 for (int x = 0; x < manager.currentChosenTracks.size(); x++) {
                                     Track track = manager.currentChosenTracks.get(x);
+                                    track.setVote(0);
                                     if (track.getTrackId() == voteId)
                                         track.addVote();
                                 }
+
+
                             } catch(Exception e) {
                                 e.printStackTrace();
                             }
@@ -132,8 +140,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 }
             }
         };
-
-        thread.start();
+        updateThread.start();
     }
 
     private boolean hasTrackId(int trackId) {
@@ -269,6 +276,8 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         if(manager.mediaPlayer != null)
           manager.mediaPlayer.stop();
         this.startActivity(new Intent(this, MainMenu.class));
+        runThread = false;
+        manager = new Manager();
         finish();
     }
 
@@ -341,11 +350,11 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void restartClient() {
+        manager.currentChosenTracks.clear();
+        manager.hasUserChoseSong = false;
+        manager.hasUserVotedForSong = false;
         this.runOnUiThread(new Runnable() {
             public void run() {
-                manager.currentChosenTracks.clear();
-                manager.hasUserChoseSong = false;
-                manager.hasUserVotedForSong = false;
                 adapter = new SongListAdapter(
                         manager.currentSearchTracks);
                 trackView.setAdapter(adapter);
@@ -469,6 +478,8 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 if (manager.currentChosenTracks.size() == 0)
                     return itemView;
 
+                if(position >= manager.currentChosenTracks.size())
+                    return itemView;
                 Track currentTrack = Manager.manager.currentChosenTracks.get(position);
 
                 ImageView trackIcon = (ImageView) itemView.findViewById(R.id.imgIcon);

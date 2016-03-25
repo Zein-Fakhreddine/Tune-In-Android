@@ -50,6 +50,9 @@ public class Track {
         votes -= 1;
     }
 
+    public void setVote(int votes){
+        this.votes = votes;
+    }
     private Bitmap getTrackBitMap(){
         try {
             Bitmap bmp;

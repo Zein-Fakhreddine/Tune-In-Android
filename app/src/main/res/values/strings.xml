@@ -7,4 +7,6 @@
     <string name="the_image_of_the_current_song">The image of the current song</string>
     <string name="key">Key:</string>
     <string name="session_name">Session name:</string>
+    <string name="host_session">Host Session</string>
+    <string name="join_session">Join Session</string>
 </resources>

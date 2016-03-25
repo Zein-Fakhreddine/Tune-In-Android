@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Session Name: "
+        android:text="@string/session_name"
         android:id="@+id/txtSessionName"
         android:layout_marginLeft="36dp"
         android:layout_marginStart="36dp"
@@ -29,12 +29,13 @@
         android:layout_alignLeft="@+id/txtSessionName"
         android:layout_alignStart="@+id/txtSessionName"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:inputType="text" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Host Session"
+        android:text="@string/host_session"
         android:id="@+id/btnHost"
         android:layout_below="@+id/etxtSessionName"
         android:layout_alignLeft="@+id/etxtSessionName"
@@ -47,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Key: "
+        android:text="@string/key"
         android:id="@+id/txtKey"
         android:layout_centerVertical="true"
         android:layout_alignLeft="@+id/btnHost"
@@ -64,12 +65,13 @@
         android:layout_alignStart="@+id/txtKey"
         android:layout_marginTop="49dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:inputType="textCapCharacters" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Join Session"
+        android:text="@string/join_session"
         android:id="@+id/btnJoin"
         android:layout_below="@+id/etxtAddress"
         android:layout_alignLeft="@+id/etxtAddress"
