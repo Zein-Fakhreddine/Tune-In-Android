@@ -4,6 +4,10 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -17,22 +21,53 @@ public class TrackSearch extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent workIntent) {
-        // Gets data from the incoming Intent
-        Log.d("TUNEIN", "Started intent");
         String dataString = workIntent.getDataString();
 
-        Log.d("TUNEIN", "Data: " + dataString);
-        ArrayList<String> strings = SoundcloudSearch.getTracks("7c89e606e88c94ff47bfd84357e5e9f4", dataString, 10);
+        String type = dataString.split(":")[1];
+        String search = dataString.split(":")[0];
 
-        ArrayList<Track> tracks = new ArrayList<>();
-        for(int i = 0; i < strings.size(); i++){
-            String s = strings.get(i);
-            Track t = new Track(s);
-            if(t.isStreamable())
+        if(type.equals("sc")){
+            ArrayList<String> strings = Manager.manager.scSearch.getTracks(search, 10);
+
+            ArrayList<Track> tracks = new ArrayList<>();
+            for(int i = 0; i < strings.size(); i++){
+                if(i == 0)
+                    Manager.manager.currentSearchTracks.clear();
+                String s = strings.get(i);
+                Track t = new Track(s, Track.TRACK_TYPE.SOUNDCLOUD);
+                if(t.isStreamable())
+                    Manager.manager.currentSearchTracks.add(t);
                 tracks.add(t);
-        }
-        Manager.manager.setTracks(tracks);
+            }
 
+            Manager.manager.doneSearching();
+        } else if(type.equals("sp")){
+            try{
+                String string = Manager.manager.spSearch.searchTracks(search, 0, 10);
+                JSONObject fullJson = new JSONObject(string);
+                JSONObject trackJson = fullJson.getJSONObject("tracks");
+                JSONArray jArray = trackJson.getJSONArray("items");
+
+                ArrayList<Track> tracks = new ArrayList<>();
+                for(int i = 0; i < jArray.length(); i++){
+                    JSONObject js = jArray.getJSONObject(i);
+                    if(i == 0)
+                        Manager.manager.currentSearchTracks.clear();
+                    jArray.getString(3);
+                    Log.d("TUNEIN", "JSON: " + js.getString("uri"));
+                    Track t = new Track(js, Track.TRACK_TYPE.SPOTIFY);
+
+                    Manager.manager.currentSearchTracks.add(t);
+
+                   tracks.add(t);
+                }
+
+                Manager.manager.doneSearching();
+            } catch (Exception e){
+                e.printStackTrace();
+                Manager.manager.doneSearching();
+            }
+        }
     }
 
 }

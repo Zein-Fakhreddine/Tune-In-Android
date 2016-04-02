@@ -32,7 +32,6 @@ public class ScUser {
         userBitMap = getTrackBitMap();
     }
 
-
     private Bitmap getTrackBitMap(){
         try {
             Bitmap bmp;

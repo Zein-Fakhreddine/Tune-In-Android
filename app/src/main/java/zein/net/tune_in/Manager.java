@@ -4,20 +4,25 @@ import android.app.Activity;
 import android.media.MediaPlayer;
 import android.util.Log;
 
+import com.spotify.sdk.android.player.Player;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * Created by Zein's on 2/2/2016.
- * Manages everything for the users
- */
 public class Manager {
 
-    public static final String serverIP = "https://tuneinbackend.herokuapp.com";
+    public static final boolean DEBUG = false;
+
+    public static final String serverIP = (DEBUG) ? "http://localhost:8000" : "https://tuneinbackend.herokuapp.com";
+
     private final String USER_AGENT = "Mozilla/5.0";
+
+    public static final String SPOTIFY_CLIENT_ID = "d6d5380ae25943f9ba03d499b0260675";
+    public static final String REDIRECT_URI = "tunein://callback";
+    public static final int REQUEST_CODE = 1337;
     public static Manager manager;
 
     public String sessionName;
@@ -31,6 +36,8 @@ public class Manager {
 
     public User currentUser;
 
+    public SoundcloudSearch scSearch = new SoundcloudSearch("7c89e606e88c94ff47bfd84357e5e9f4");
+    public SpotifySearch spSearch = new SpotifySearch();
     public boolean isUserSearching = false;
     public boolean isUserSearchingForUser = false;
     public boolean isUserSearchingForPlaylist = false;
@@ -38,13 +45,12 @@ public class Manager {
     public boolean hasUserVotedForSong = false;
     public boolean isServer = false;
     public boolean isChoosing = false;
-    public boolean updateSearchAdapter = false;
-    public boolean restart = false;
+    public boolean isLinkedWithSpotify = false;
     public MediaPlayer mediaPlayer;
+    public int currentIteration = 0;
+    public Player spotifyPlayer;
 
-    public void setTracks(ArrayList<Track> tracks){
-        currentSearchTracks.clear();
-        currentSearchTracks.addAll(tracks);
+    public void doneSearching(){;
         this.isUserSearching = false;
     }
 
@@ -107,8 +113,6 @@ public class Manager {
     public boolean isServerOnline(){
         try {
             HttpURLConnection.setFollowRedirects(false);
-            // note : you may also need
-            //        HttpURLConnection.setInstanceFollowRedirects(false)
             HttpURLConnection con =
                     (HttpURLConnection) new URL(Manager.serverIP).openConnection();
             con.setRequestMethod("HEAD");
@@ -169,18 +173,6 @@ public class Manager {
 
             int responseCode = con.getResponseCode();
             System.out.println("Response Code : " + responseCode);
-
-            /*
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-
-            in.close();
-            */
         } catch(Exception e){
             e.printStackTrace();
         }

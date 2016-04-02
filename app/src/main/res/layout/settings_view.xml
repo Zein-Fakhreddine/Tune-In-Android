@@ -25,8 +25,7 @@
         android:id="@+id/btnLink"
         android:layout_below="@+id/txtSoundcloud"
         android:layout_alignLeft="@+id/txtSoundcloud"
-        android:layout_alignStart="@+id/txtSoundcloud"
-        android:layout_marginTop="40dp" />
+        android:layout_alignStart="@+id/txtSoundcloud" />
 
     <ProgressBar
         android:layout_width="wrap_content"
@@ -53,17 +52,16 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Tune In: "
         android:id="@+id/txtTuneIn"
-        android:layout_below="@+id/txtSoundcloudUsername"
-        android:layout_alignLeft="@+id/txtSoundcloudUsername"
-        android:layout_alignStart="@+id/txtSoundcloudUsername"
-        android:layout_marginTop="43dp" />
+        android:layout_above="@+id/swChooseRandomly"
+        android:layout_alignLeft="@+id/btnSpotifyLink"
+        android:layout_alignStart="@+id/btnSpotifyLink" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Set Backup Playlist"
         android:id="@+id/btnBackupPlaylist"
-        android:layout_centerVertical="true"
+        android:layout_alignTop="@+id/swChooseRandomly"
         android:layout_alignLeft="@+id/txtTuneIn"
         android:layout_alignStart="@+id/txtTuneIn" />
 
@@ -85,5 +83,33 @@
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/btnLink"
         android:layout_toEndOf="@+id/btnLink" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Spotify:"
+        android:id="@+id/txtSpotify"
+        android:layout_below="@+id/txtSoundcloudUsername"
+        android:layout_alignLeft="@+id/txtSoundcloudUsername"
+        android:layout_alignStart="@+id/txtSoundcloudUsername" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Link With Spotify"
+        android:id="@+id/btnSpotifyLink"
+        android:layout_below="@+id/txtSpotify"
+        android:layout_alignLeft="@+id/txtSpotify"
+        android:layout_alignStart="@+id/txtSpotify" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pbLoadingSpotify"
+        android:visibility="invisible"
+        android:layout_alignTop="@+id/btnSpotifyLink"
+        android:layout_toRightOf="@+id/btnSpotifyLink"
+        android:layout_toEndOf="@+id/btnSpotifyLink" />
 
 </RelativeLayout>

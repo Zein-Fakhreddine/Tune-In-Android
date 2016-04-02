@@ -41,8 +41,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     private ArrayAdapter<Track> adapter;
     private boolean doubleBackToExitPressedOnce;
 
-    //Threads
-    private Thread updateThread;
     private boolean runThread;
 
     @Override
@@ -92,7 +90,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
         handler.postDelayed(r, 500);
 
-        updateThread  = new Thread() {
+        Thread thread  = new Thread() {
             public void run() {
                 while (runThread && manager != null) {
                     if (manager.hasUserChoseSong || manager.isServer) {
@@ -103,17 +101,26 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                             if (message.equals("restart"))
                                 restartClient();
                         }
-
                         for (int i = 0; i < info.length; i++) {
-                            int trackId = Integer.parseInt(info[i]);
-                            Log.d("TUNEIN", "Found track with id: " + trackId);
-                            if (!(trackId == -1 || trackId == 0)) {
-                                if (!hasTrackId(trackId))
-                                    manager.currentChosenTracks.add(new Track(SoundcloudSearch.getTrack("7c89e606e88c94ff47bfd84357e5e9f4", trackId)));
+                            if(!info[i].equals("-1")) {
+                                Log.d("TUNEIN", "Info: "+ info[i]);
+                                int currentTrackIteration = Integer.parseInt(info[i].split("ITE")[1]);
+                                if (currentTrackIteration == manager.currentIteration) {
+                                    Log.d("TUNEIN", "Adding track with iteration: " + currentTrackIteration + " and manager iteration: " + manager.currentIteration);
+                                    String trackId = info[i].split("ITE")[0];
+                                    Log.d("TUNEIN", "Found track with id: " + trackId);
+                                    if (!(trackId == "-1" || trackId == "0")) {
+                                        if (!hasTrackId(trackId)){
+                                            if(isInteger(trackId))
+                                                manager.currentChosenTracks.add(Track.getTrack(trackId, Track.TRACK_TYPE.SOUNDCLOUD));
+                                            else
+                                                manager.currentChosenTracks.add(Track.getTrack(trackId, Track.TRACK_TYPE.SPOTIFY));
+                                        }
 
+                                    }
+                                }
                             }
                         }
-
                         String[] votesIds = manager.getVotes(manager.getHostKey()).split(",");
                         for (int i = 0; i < votesIds.length; i++) {
                             try{
@@ -121,16 +128,13 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                                 for (int x = 0; x < manager.currentChosenTracks.size(); x++) {
                                     Track track = manager.currentChosenTracks.get(x);
                                     track.setVote(0);
-                                    if (track.getTrackId() == voteId)
+                                    if (track.getTrackId() == String.valueOf(voteId))
                                         track.addVote();
                                 }
-
-
                             } catch(Exception e) {
                                 e.printStackTrace();
                             }
                         }
-
                     }
                     try{
                         Thread.sleep(500);
@@ -140,14 +144,39 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 }
             }
         };
-        updateThread.start();
+        thread.start();
     }
 
-    private boolean hasTrackId(int trackId) {
+    public  boolean isInteger(String str) {
+        if (str == null) {
+            return false;
+        }
+        int length = str.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (str.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = str.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasTrackId(String trackId) {
         boolean hasTrackId = false;
         for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
-            int chosenTrackId = manager.currentChosenTracks.get(i).getTrackId();
-            if (trackId == chosenTrackId) {
+            String chosenTrackId = manager.currentChosenTracks.get(i).getTrackId();
+            Log.d("TUNEIN", "The track id is: " + trackId + " and the chosen track id is: " + chosenTrackId);
+            if (trackId.equals(chosenTrackId)){
                 hasTrackId = true;
                 break;
             }
@@ -188,10 +217,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 return false;
             }
         });
-
-
-        // Set up the buttons
-        searchDialog.setPositiveButton("SEARCH", new DialogInterface.OnClickListener() {
+        searchDialog.setPositiveButton("Search", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
@@ -217,7 +243,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         Log.d("TUNEIN", "Called with search term: " + search);
 
         trackSearch = new Intent(this, TrackSearch.class);
-        trackSearch.setData(Uri.parse(search));
+        trackSearch.setData(Uri.parse(search + ":sp"));
         this.startService(trackSearch);
 
         manager.isUserSearching = true;
@@ -241,15 +267,14 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                     error("No one has chose a song yet");
                     return true;
                 }
-
-                if (manager.isServer) {
+                else if (manager.isServer)
                     startSong();
-                } else
+                else
                     error("You have to be the host to start the session!");
                 break;
 
             case R.id.end_id:
-                //manager.sendExit(manager.getHostKey());
+                //manager.sendExit(manager.getHostKey()); // TODO: Tell the server that you have ended the session
                 endSession();
                 break;
             case R.id.settings_id:
@@ -273,8 +298,12 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void leaveSession(){
-        if(manager.mediaPlayer != null)
-          manager.mediaPlayer.stop();
+        if(manager.mediaPlayer != null){
+            manager.mediaPlayer.stop();
+            manager.mediaPlayer.release();
+            manager.mediaPlayer = null;
+        }
+
         this.startActivity(new Intent(this, MainMenu.class));
         runThread = false;
         manager = new Manager();
@@ -301,6 +330,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         settingsSession.putExtra("Link", true);
         this.startActivity(settingsSession);
     }
+
     private void startSong() {
         if (manager.currentChosenTracks.size() == 0) {
             error("No chosen songs to play");
@@ -310,6 +340,8 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
             error("A song is already playing");
             return;
         }
+
+        manager.currentIteration++;
         manager.mediaPlayer = new MediaPlayer();
         manager.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -350,6 +382,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void restartClient() {
+        manager.currentIteration++;
         manager.currentChosenTracks.clear();
         manager.hasUserChoseSong = false;
         manager.hasUserVotedForSong = false;
@@ -385,7 +418,6 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     private void registerListCallBack() {
-
         trackView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -480,13 +512,15 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
                 if(position >= manager.currentChosenTracks.size())
                     return itemView;
+
                 Track currentTrack = Manager.manager.currentChosenTracks.get(position);
 
                 ImageView trackIcon = (ImageView) itemView.findViewById(R.id.imgIcon);
                 trackIcon.setImageBitmap(currentTrack.getTrackBitmap());
-                trackIcon.getLayoutParams().width = 250;
-                trackIcon.getLayoutParams().height = 250;
-
+                if(trackIcon.getLayoutParams().width != 250 || trackIcon.getLayoutParams().height != 250) {
+                    trackIcon.getLayoutParams().width = 250;
+                    trackIcon.getLayoutParams().height = 250;
+                }
                 TextView trackName = (TextView) itemView.findViewById(R.id.txtSongName);
                 trackName.setText(currentTrack.getTrackTitle());
                 TextView trackTime = (TextView) itemView.findViewById(R.id.txtTime);
@@ -499,8 +533,11 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
                 ImageView trackIcon = (ImageView) itemView.findViewById(R.id.imgIcon);
                 trackIcon.setImageBitmap(currentTrack.getTrackBitmap());
-                trackIcon.getLayoutParams().width = 250;
-                trackIcon.getLayoutParams().height = 250;
+
+                if(trackIcon.getLayoutParams().width != 250 || trackIcon.getLayoutParams().height != 250) {
+                    trackIcon.getLayoutParams().width = 250;
+                    trackIcon.getLayoutParams().height = 250;
+                }
 
                 TextView trackName = (TextView) itemView.findViewById(R.id.txtSongName);
                 trackName.setText(currentTrack.getTrackTitle());

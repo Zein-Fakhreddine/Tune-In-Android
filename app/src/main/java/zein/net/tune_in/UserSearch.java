@@ -21,16 +21,15 @@ public class UserSearch extends IntentService {
         String dataString = workIntent.getDataString();
 
         Log.d("TUNEIN", "Data:" + dataString);
-        ArrayList<String> strings = SoundcloudSearch.getUsers("7c89e606e88c94ff47bfd84357e5e9f4", dataString, 10);
+        ArrayList<String> strings = Manager.manager.scSearch.getUsers(dataString, 10);
         ArrayList<ScUser> users = new ArrayList<>();
         for(int i = 0; i < strings.size(); i++){
-            String s = strings.get(i);
-            ScUser user = new ScUser(s);
-            users.add(user);
+        String s = strings.get(i);
+        ScUser user = new ScUser(s);
+        users.add(user);
         }
 
         Manager.manager.setUsers(users);
 
-    }
-
+        }
 }

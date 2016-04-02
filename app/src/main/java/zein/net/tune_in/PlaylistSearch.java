@@ -17,7 +17,7 @@ public class PlaylistSearch extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String data = intent.getDataString();
 
-        ArrayList<String> strings = SoundcloudSearch.getPlaylists("7c89e606e88c94ff47bfd84357e5e9f4", data, 5);
+        ArrayList<String> strings = Manager.manager.scSearch.getPlaylists(data, 5);
         for(int i = 0; i < strings.size(); i++){
             String s = strings.get(i);
             Playlist p = new Playlist(s);

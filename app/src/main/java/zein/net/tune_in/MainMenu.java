@@ -5,27 +5,45 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.audiofx.BassBoost;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerNotificationCallback;
+import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.sdk.android.player.Spotify;
 
 import static zein.net.tune_in.Manager.manager;
 /**
  * Created by Zein's on 2/2/2016.
  */
-public class MainMenu extends Activity{
+public class MainMenu extends Activity implements PlayerNotificationCallback, ConnectionStateCallback{
     
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
     private TextView txtLoadMessage;
     private ProgressBar pbLoading;
+    private ImageView imgSettings;
+    private boolean isConnecting;
+
+
+    private Player mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +51,77 @@ public class MainMenu extends Activity{
         setContentView(R.layout.activit_main_menu);
         initManager();
         initView();
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        Log.d("TUNEIN", String.valueOf(requestCode));
+        // Check if result comes from the correct activity
+        if (requestCode == manager.REQUEST_CODE) {
+            Log.d("TUNEIN", "GOODIN");
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+                Log.d("TUNEIN", "Best");
+                Config playerConfig = new Config(this, response.getAccessToken(), manager.SPOTIFY_CLIENT_ID);
+
+                Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+                    @Override
+                    public void onInitialized(Player player) {
+                        manager.spotifyPlayer = player;
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("TUNEIN", "Could not initialize player: " + throwable.getMessage());
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onLoggedIn() {
+        Log.d("TUNEIN", "User logged in");
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d("TUNEIN", "User logged out");
+    }
+
+    @Override
+    public void onLoginFailed(Throwable error) {
+        Log.d("TUNEIN", "Login failed");
+    }
+
+    @Override
+    public void onTemporaryError() {
+        Log.d("TUNEIN", "Temporary error occurred");
+    }
+
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d("TUNEIN", "Received connection message: " + message);
+    }
+
+    @Override
+    public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
+        Log.d("TUNEIN", "Playback event received: " + eventType.name());
+    }
+
+    @Override
+    public void onPlaybackError(ErrorType errorType, String errorDetails) {
+        Log.d("TUNEIN", "Playback error received: " + errorType.name());
+    }
+
+    @Override
+    protected void onDestroy() {
+        Spotify.destroyPlayer(this);
+        super.onDestroy();
+    }
+
 
     private void initManager(){
         manager = new Manager();
@@ -47,6 +135,7 @@ public class MainMenu extends Activity{
         txtName = (EditText) findViewById(R.id.etxtSessionName);
         txtLoadMessage = (TextView) findViewById(R.id.txtLoadMessage);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+        imgSettings = (ImageView) findViewById(R.id.imgSettings);
     }
 
     public void onClick(View v) {
@@ -97,6 +186,10 @@ public class MainMenu extends Activity{
 
             getUsername(name, false);
         }
+
+        if(v.getId() == imgSettings.getId())
+            this.startActivity(new Intent(this, SettingsSession.class));
+
     }
 
     private void getUsername(final String name, final boolean isHosting){
@@ -124,6 +217,10 @@ public class MainMenu extends Activity{
                             return false;
                         }
 
+                        if(isConnecting){
+                            error("You are already connecting");
+                            return false;
+                        }
                         if(isHosting)
                             startServer(search.getText().toString(), name);
                         else
@@ -196,6 +293,7 @@ public class MainMenu extends Activity{
         Thread thread = new Thread() {
             public void run() {
                 try{
+                    isConnecting = true;
                     manager.sessionName = sessionName;
                     manager.currentUser = new User(username);
                     setLoadMessage("Attempting to host server");
@@ -206,6 +304,7 @@ public class MainMenu extends Activity{
                     loadTuneIn();
                 } catch (Exception e){
                     e.printStackTrace();
+                    isConnecting = false;
                     error("There was an error trying to host a server");
                 }
             }
@@ -217,10 +316,12 @@ public class MainMenu extends Activity{
 
         Thread thread = new Thread() {
             public void run() {
+                isConnecting = true;
                 setLoadMessage("Checking if server exists");
                 if(!manager.checkServerExists(sessionKey)){
                     error("Can not find a server with the key: " + sessionKey);
                     cancelLoading();
+                    isConnecting = false;
                     return;
                 }
                 manager.currentUser = new User(username);
@@ -233,6 +334,7 @@ public class MainMenu extends Activity{
                 else{
                     error((code.equals("ht")) ? "This username has already been taken" : "there was an error added the user");
                     cancelLoading();
+                    isConnecting = false;
                 }
             }
         };
