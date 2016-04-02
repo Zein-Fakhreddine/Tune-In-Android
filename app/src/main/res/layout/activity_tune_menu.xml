@@ -52,10 +52,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/pbSearching"
-        android:layout_below="@+id/lstTracks"
-        android:layout_toLeftOf="@+id/imgAddSong"
-        android:layout_toStartOf="@+id/imgAddSong"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/imgSpotify"
+        android:layout_toStartOf="@+id/imgSpotify" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -77,5 +77,26 @@
         android:layout_toRightOf="@+id/imgSong"
         android:layout_toEndOf="@+id/imgSong"
         android:contentDescription="@string/plays_or_pause_s_the_current_song" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgSouncloud"
+        android:src="@mipmap/ic_soundcloud"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/imgAddSong"
+        android:layout_toStartOf="@+id/imgAddSong"
+        android:alpha="1" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgSpotify"
+        android:src="@mipmap/ic_spotifyicon"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/imgSouncloud"
+        android:layout_below="@+id/lstTracks"
+        android:layout_toLeftOf="@+id/imgSouncloud"
+        android:alpha="1" />
 
 </RelativeLayout>

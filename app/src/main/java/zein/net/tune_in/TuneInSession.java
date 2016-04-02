@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
@@ -27,6 +28,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.Spotify;
+
 import java.util.ArrayList;
 
 import static zein.net.tune_in.Manager.manager;
@@ -35,7 +43,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
 
     private ListView trackView;
     private ProgressBar pbSearching;
-    private ImageView imgSong, imgPlayPause;
+    private ImageView imgSong, imgPlayPause, imgSpotify, imgSoundcloud;
 
     //Tracks
     private ArrayAdapter<Track> adapter;
@@ -66,6 +74,18 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         imgSong = (ImageView) findViewById(R.id.imgSong);
         imgPlayPause = (ImageView) findViewById(R.id.imgPlayPause);
         imgPlayPause.setOnClickListener(this);
+        imgSpotify = (ImageView) findViewById(R.id.imgSpotify);
+        imgSpotify.setOnClickListener(this);
+        imgSoundcloud = (ImageView)findViewById(R.id.imgSouncloud);
+        imgSoundcloud.setOnClickListener(this);
+
+        if(manager.currentSearchType == Track.TRACK_TYPE.SOUNDCLOUD){
+            imgSpotify.setAlpha(.5f);
+            imgSoundcloud.setAlpha(1f);
+        } else{
+            imgSoundcloud.setAlpha(.5f);
+            imgSpotify.setAlpha(1f);
+        }
         if(!manager.isServer)
             imgPlayPause.setVisibility(View.INVISIBLE);
         adapter = new SongListAdapter(Manager.manager.currentSearchTracks);
@@ -148,29 +168,60 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     }
 
     public  boolean isInteger(String str) {
-        if (str == null) {
+        if (str == null)
             return false;
-        }
         int length = str.length();
-        if (length == 0) {
+        if (length == 0)
             return false;
-        }
         int i = 0;
         if (str.charAt(0) == '-') {
-            if (length == 1) {
+            if (length == 1)
                 return false;
-            }
             i = 1;
         }
         for (; i < length; i++) {
             char c = str.charAt(i);
-            if (c < '0' || c > '9') {
+            if (c < '0' || c > '9')
                 return false;
-            }
         }
         return true;
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        Log.d("TUNEIN", String.valueOf(requestCode));
+        // Check if result comes from the correct activity
+        if (requestCode == manager.REQUEST_CODE) {
+            Log.d("TUNEIN", "GOODIN");
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+                Log.d("TUNEIN", "Best");
+                Config playerConfig = new Config(this, response.getAccessToken(), manager.SPOTIFY_CLIENT_ID);
+
+                Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+                    @Override
+                    public void onInitialized(Player player) {
+                        manager.spotifyPlayer = player;
+                        Log.d("TUNEIN", "Connected");
+                        manager.isLinkedWithSpotify = true;
+                        manager.currentSearchType = Track.TRACK_TYPE.SPOTIFY;
+                        imgSoundcloud.setAlpha(.5f);
+                        imgSpotify.setAlpha(1f);
+                        pbSearching.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("TUNEIN", "Could not initialize player: " + throwable.getMessage());
+                        error("Unexpected error occurred while connecting to Spotify");
+                    }
+                });
+            }
+        }
+    }
     private boolean hasTrackId(String trackId) {
         boolean hasTrackId = false;
         for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
@@ -243,7 +294,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         Log.d("TUNEIN", "Called with search term: " + search);
 
         trackSearch = new Intent(this, TrackSearch.class);
-        trackSearch.setData(Uri.parse(search + ":sp"));
+        trackSearch.setData(Uri.parse(search + ":" + ((manager.currentSearchType == Track.TRACK_TYPE.SOUNDCLOUD) ? "sc" : "sp")));
         this.startService(trackSearch);
 
         manager.isUserSearching = true;
@@ -342,25 +393,32 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         }
 
         manager.currentIteration++;
-        manager.mediaPlayer = new MediaPlayer();
-        manager.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                startSong();
-            }
-        });
-        manager.mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                if (manager.currentPlayingTrack != null) {
-                    imgSong.setImageBitmap(manager.currentPlayingTrack.getTrackBitmap());
-                    imgSong.getLayoutParams().width = 200;
-                    imgSong.getLayoutParams().height = 200;
-                    imgSong.setVisibility(View.VISIBLE);
-                }
-            }
-        });
 
+        Track trackToPlay = null;
+        for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
+            Track track = manager.currentChosenTracks.get(i);
+            Log.d("TUNEIN", "Song:" + track.getTrackTitle() + " has: " + track.getVotes() + "votes");
+            if (trackToPlay == null || track.getVotes() > trackToPlay.getVotes())
+                trackToPlay = track;
+        }
+        manager.currentPlayingTrack = trackToPlay;
+
+        if(trackToPlay.getTrackType() == Track.TRACK_TYPE.SOUNDCLOUD) {
+            manager.mediaPlayer = new MediaPlayer();
+            manager.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    startSong();
+                }
+            });
+        } else{
+            //TODO: Add a way to detect when the Spotify song finishes
+            replaySpotifySong(manager.currentPlayingTrack.getDuration());
+        }
+        imgSong.setImageBitmap(manager.currentPlayingTrack.getTrackBitmap());
+        imgSong.getLayoutParams().width = 200;
+        imgSong.getLayoutParams().height = 200;
+        imgSong.setVisibility(View.VISIBLE);
         imgPlayPause.setImageBitmap(BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause));
         Intent playAudio = new Intent(this, PlayAudio.class);
 
@@ -370,6 +428,25 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
         pbSearching.setVisibility(View.VISIBLE);
 
         restart();
+    }
+
+    private void replaySpotifySong(int waitTime){
+        new CountDownTimer(waitTime, 1000) {
+            int pausedTime = 0;
+            public void onTick(long millisUntilFinished) {
+                if(!manager.isTrackPlaying)
+                    pausedTime++;
+            }
+
+            public void onFinish() {
+                Log.d("TUNEIN", "Finished");
+                if(pausedTime == 0)
+                    startSong();
+                else
+                    replaySpotifySong(pausedTime);
+            }
+        }.start();
+
     }
 
     private void restart() {
@@ -448,18 +525,60 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
     @Override
     public void onClick(View v) {
         if(v.getId() == imgPlayPause.getId()){
-            if(manager.mediaPlayer != null){
-                if(manager.mediaPlayer.isPlaying())
-                    manager.mediaPlayer.pause();
-                else
-                    manager.mediaPlayer.start();
-                imgPlayPause.setImageBitmap((manager.mediaPlayer.isPlaying()) ? BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause) : BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_play));
+            if(manager.currentPlayingTrack != null){
+                if(manager.mediaPlayer != null && manager.currentPlayingTrack.getTrackType() == Track.TRACK_TYPE.SOUNDCLOUD){
+                    if(manager.mediaPlayer.isPlaying()){
+                        manager.mediaPlayer.pause();
+                        manager.isTrackPlaying = false;
+                    }
+                    else{
+                        manager.mediaPlayer.start();
+                        manager.isTrackPlaying = true;
+                    }
+                } else if(manager.currentPlayingTrack.getTrackType() == Track.TRACK_TYPE.SPOTIFY && manager.spotifyPlayer != null){
+                    if(manager.isTrackPlaying){
+                        manager.spotifyPlayer.pause();
+                        manager.isTrackPlaying = false;
+                    } else{
+                        manager.spotifyPlayer.resume();
+                        manager.isTrackPlaying = true;
+                    }
+                }
+
+                imgPlayPause.setImageBitmap((manager.isTrackPlaying) ? BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_pause) : BitmapFactory.decodeResource(TuneInSession.this.getResources(), R.mipmap.ic_play));
+            }
+
+        }
+        if(v.getId() == imgSoundcloud.getId()){
+            if(manager.currentSearchType != Track.TRACK_TYPE.SOUNDCLOUD){
+                manager.currentSearchType = Track.TRACK_TYPE.SOUNDCLOUD;
+                imgSpotify.setAlpha(.5f);
+                imgSoundcloud.setAlpha(1f);
+            }
+
+        }
+        if(v.getId() == imgSpotify.getId()){
+            if(manager.currentSearchType != Track.TRACK_TYPE.SPOTIFY){
+                if(manager.spotifyPlayer == null){
+                    pbSearching.setVisibility(View.VISIBLE);
+                    AuthenticationRequest.Builder builder =
+                            new AuthenticationRequest.Builder(manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, manager.REDIRECT_URI);
+                    builder.setScopes(new String[]{"user-library-read", "streaming"});
+                    AuthenticationRequest request = builder.build();
+
+                    AuthenticationClient.openLoginActivity(this, manager.REQUEST_CODE, request);
+                } else{
+                    manager.currentSearchType = Track.TRACK_TYPE.SPOTIFY;
+                    imgSoundcloud.setAlpha(.5f);
+                    imgSpotify.setAlpha(1f);
+                }
+
             }
         }
     }
 
     private void voteForSong(final int position) {
-        if (manager.currentUser.getChosenTrack().getTrackId() == manager.currentChosenTracks.get(position).getTrackId()) {
+        if (manager.currentUser.getChosenTrack().getTrackId().equals(manager.currentChosenTracks.get(position).getTrackId())) {
             error("You can't vote for the song you chose!");
             return;
         }
@@ -513,7 +632,7 @@ public class TuneInSession extends Activity implements PopupMenu.OnMenuItemClick
                 if(position >= manager.currentChosenTracks.size())
                     return itemView;
 
-                Track currentTrack = Manager.manager.currentChosenTracks.get(position);
+                Track currentTrack = manager.currentChosenTracks.get(position);
 
                 ImageView trackIcon = (ImageView) itemView.findViewById(R.id.imgIcon);
                 trackIcon.setImageBitmap(currentTrack.getTrackBitmap());

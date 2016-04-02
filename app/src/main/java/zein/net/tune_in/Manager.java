@@ -46,9 +46,11 @@ public class Manager {
     public boolean isServer = false;
     public boolean isChoosing = false;
     public boolean isLinkedWithSpotify = false;
+    public boolean isTrackPlaying = false;
     public MediaPlayer mediaPlayer;
     public int currentIteration = 0;
     public Player spotifyPlayer;
+    public Track.TRACK_TYPE currentSearchType = Track.TRACK_TYPE.SOUNDCLOUD;
 
     public void doneSearching(){;
         this.isUserSearching = false;

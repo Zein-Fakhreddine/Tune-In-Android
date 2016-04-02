@@ -173,7 +173,7 @@ public class SettingsSession extends Activity implements View.OnClickListener{
                 pbSpotifyLoading.setVisibility(View.VISIBLE);
                 AuthenticationRequest.Builder builder =
                         new AuthenticationRequest.Builder(manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, manager.REDIRECT_URI);
-                builder.setScopes(new String[]{"user-read-private", "streaming"});
+                builder.setScopes(new String[]{"user-library-read", "streaming"});
                 AuthenticationRequest request = builder.build();
 
                 AuthenticationClient.openLoginActivity(this, manager.REQUEST_CODE, request);

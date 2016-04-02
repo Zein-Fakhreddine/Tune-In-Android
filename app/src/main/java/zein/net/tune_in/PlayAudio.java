@@ -21,17 +21,10 @@ public class PlayAudio extends IntentService {
     @Override
     protected void onHandleIntent(Intent workIntent) {
         Log.d("TUNEIN", "GOT HERE");
-        Track trackToPlay = null;
-        for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
-            Track track = manager.currentChosenTracks.get(i);
-            Log.d("TUNEIN", "Song:" + track.getTrackTitle() + " has: " + track.getVotes() + "votes");
-            if (trackToPlay == null || track.getVotes() > trackToPlay.getVotes())
-                trackToPlay = track;
-        }
-        if(trackToPlay.getTrackType() == Track.TRACK_TYPE.SOUNDCLOUD) {
+
+        if(Manager.manager.currentPlayingTrack.getTrackType() == Track.TRACK_TYPE.SOUNDCLOUD) {
             try {
-                manager.currentPlayingTrack = trackToPlay;
-                manager.mediaPlayer.setDataSource(manager.scSearch.getStreamURL(Integer.parseInt(trackToPlay.getTrackId())));
+                manager.mediaPlayer.setDataSource(manager.scSearch.getStreamURL(Integer.parseInt(Manager.manager.currentPlayingTrack.getTrackId())));
                 manager.mediaPlayer.prepare();
                 manager.mediaPlayer.start();
             } catch (Exception e) {
@@ -40,9 +33,9 @@ public class PlayAudio extends IntentService {
             }
         } else
             if(manager.spotifyPlayer != null)
-                manager.spotifyPlayer.play("spotify:track:" + trackToPlay.getTrackId());
+                manager.spotifyPlayer.play("spotify:track:" + Manager.manager.currentPlayingTrack.getTrackId());
 
-
+        manager.isTrackPlaying = true;
         manager.hasUserChoseSong = false;
         manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
         manager.currentChosenTracks.clear();

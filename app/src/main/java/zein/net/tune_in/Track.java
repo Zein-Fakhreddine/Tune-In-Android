@@ -21,6 +21,7 @@ public class Track {
     private String artWorkURL;
     private int likeCount;
     private int playbackCount;
+    private int duration;
     private String trackId;
     private int votes;
     private Bitmap trackBitMap;
@@ -40,9 +41,9 @@ public class Track {
 
     public Track(JSONObject js, TRACK_TYPE type){
         this.trackType = type;
-        if(type == TRACK_TYPE.SPOTIFY){
-            initSpoify(js);
-        }
+        if(type == TRACK_TYPE.SPOTIFY)
+            initSpotify(js);
+
     }
     public void initSoundcloud(String trackJSON){
         try{
@@ -60,7 +61,7 @@ public class Track {
         trackBitMap = getTrackBitMap();
     }
 
-    public void initSpoify(JSONObject js){
+    public void initSpotify(JSONObject js){
         try{
             Log.d("TUNEIN", "this is working");
             trackTitle = js.getString("name");
@@ -68,12 +69,13 @@ public class Track {
             JSONArray jImages = jAlbum.getJSONArray("images");
             for(int i = 0; i < jImages.length(); i++){
                 JSONObject jType = jImages.getJSONObject(i);
-                if(jType.getInt("height") == 300)
+                if(jType.getInt("width") == 300 || jType.getInt("height") == 300)
                     this.artWorkURL = jType.getString("url");
                 Log.d("TUNEIN","ARTwork: " + this.artWorkURL);
                 trackBitMap = getTrackBitMap();
                 playbackCount = -1;
                 trackId = js.getString("id");
+                duration = js.getInt("duration_ms");
                 isStreamable = true;
             }
 
@@ -139,6 +141,8 @@ public class Track {
     public int getPlaybackCount(){
         return playbackCount;
     }
+
+    public int getDuration(){return duration;}
 
     public String getTrackId(){
         return trackId;

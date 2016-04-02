@@ -33,25 +33,21 @@ import static zein.net.tune_in.Manager.manager;
 /**
  * Created by Zein's on 2/2/2016.
  */
-public class MainMenu extends Activity implements PlayerNotificationCallback, ConnectionStateCallback{
+public class MainMenu extends Activity{
     
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
     private TextView txtLoadMessage;
     private ProgressBar pbLoading;
-    private ImageView imgSettings;
     private boolean isConnecting;
-
-
-    private Player mPlayer;
-
+    private String sessionName;
+    private String userName;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activit_main_menu);
         initManager();
         initView();
-
     }
 
     @Override
@@ -70,6 +66,7 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
                     @Override
                     public void onInitialized(Player player) {
                         manager.spotifyPlayer = player;
+                        startServer(userName, sessionName);
                     }
 
                     @Override
@@ -79,41 +76,6 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
                 });
             }
         }
-    }
-
-    @Override
-    public void onLoggedIn() {
-        Log.d("TUNEIN", "User logged in");
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Log.d("TUNEIN", "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(Throwable error) {
-        Log.d("TUNEIN", "Login failed");
-    }
-
-    @Override
-    public void onTemporaryError() {
-        Log.d("TUNEIN", "Temporary error occurred");
-    }
-
-    @Override
-    public void onConnectionMessage(String message) {
-        Log.d("TUNEIN", "Received connection message: " + message);
-    }
-
-    @Override
-    public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
-        Log.d("TUNEIN", "Playback event received: " + eventType.name());
-    }
-
-    @Override
-    public void onPlaybackError(ErrorType errorType, String errorDetails) {
-        Log.d("TUNEIN", "Playback error received: " + errorType.name());
     }
 
     @Override
@@ -135,7 +97,6 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
         txtName = (EditText) findViewById(R.id.etxtSessionName);
         txtLoadMessage = (TextView) findViewById(R.id.txtLoadMessage);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
-        imgSettings = (ImageView) findViewById(R.id.imgSettings);
     }
 
     public void onClick(View v) {
@@ -186,10 +147,6 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
 
             getUsername(name, false);
         }
-
-        if(v.getId() == imgSettings.getId())
-            this.startActivity(new Intent(this, SettingsSession.class));
-
     }
 
     private void getUsername(final String name, final boolean isHosting){
@@ -251,6 +208,15 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
                         return;
                     }
 
+                    if(manager.spotifyPlayer == null){
+                        if(isHosting) {
+                            requestSpotify();
+                            userName = search.getText().toString();
+                            sessionName = name;
+                            return;
+                        }
+                    }
+
                     if(isHosting)
                         startServer(search.getText().toString(), name);
                     else
@@ -273,6 +239,14 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
         nameDialog.show();
     }
 
+    private void requestSpotify(){
+        AuthenticationRequest.Builder builder =
+                new AuthenticationRequest.Builder(manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, manager.REDIRECT_URI);
+        builder.setScopes(new String[]{"user-library-read", "streaming"});
+        AuthenticationRequest request = builder.build();
+
+        AuthenticationClient.openLoginActivity(this, manager.REQUEST_CODE, request);
+    }
     private AlertDialog.Builder error(final String errorMessage){
         final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
         errorDialog.setTitle(errorMessage);
@@ -332,7 +306,7 @@ public class MainMenu extends Activity implements PlayerNotificationCallback, Co
                 if(code.equals("gg"))
                     loadTuneIn();
                 else{
-                    error((code.equals("ht")) ? "This username has already been taken" : "there was an error added the user");
+                    error((code.equals("ht")) ? "This username has already been taken" : "there was an error adding the user");
                     cancelLoading();
                     isConnecting = false;
                 }
