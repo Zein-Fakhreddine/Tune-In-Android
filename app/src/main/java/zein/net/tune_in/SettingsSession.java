@@ -97,25 +97,19 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d("TUNEIN", String.valueOf(requestCode));
         // Check if result comes from the correct activity
-        if (requestCode == manager.REQUEST_CODE) {
+        if (requestCode == Manager.REQUEST_CODE) {
             Log.d("TUNEIN", "GOODIN");
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-
+            final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
                 Log.d("TUNEIN", "Best");
-                Config playerConfig = new Config(this, response.getAccessToken(), manager.SPOTIFY_CLIENT_ID);
-
+                Config playerConfig = new Config(this, response.getAccessToken(), Manager.SPOTIFY_CLIENT_ID);
+                Log.d("TUNEIN", response.getAccessToken());
                 Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
                     @Override
                     public void onInitialized(Player player) {
-
-                        /*
-                        mPlayer = player;
-                        mPlayer.addConnectionStateCallback(MainMenu.this);
-                        mPlayer.addPlayerNotificationCallback(MainMenu.this);
-                        mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
-                        */
+                        manager.spotifyToken = response.getAccessToken();
                         manager.spotifyPlayer = player;
+
                         Log.d("TUNEIN", "Connected");
                         manager.isLinkedWithSpotify = true;
                         pbSpotifyLoading.setVisibility(View.INVISIBLE);
@@ -172,11 +166,11 @@ public class SettingsSession extends Activity implements View.OnClickListener{
             if(!manager.isLinkedWithSpotify){
                 pbSpotifyLoading.setVisibility(View.VISIBLE);
                 AuthenticationRequest.Builder builder =
-                        new AuthenticationRequest.Builder(manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, manager.REDIRECT_URI);
+                        new AuthenticationRequest.Builder(Manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, Manager.REDIRECT_URI);
                 builder.setScopes(new String[]{"user-library-read", "streaming"});
                 AuthenticationRequest request = builder.build();
 
-                AuthenticationClient.openLoginActivity(this, manager.REQUEST_CODE, request);
+                AuthenticationClient.openLoginActivity(this, Manager.REQUEST_CODE, request);
             }
         }
     }
@@ -228,13 +222,7 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         search.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
-                    if(search.getText().toString().length() == 0)
-                        return false; //TODO: Do Somehting when the user doesnt input anything
-
-                    return true;
-                }
-                return false;
+                return (event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) && search.getText().toString().length() != 0;
             }
         });
         // Set up the buttons
@@ -275,10 +263,9 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View itemView = convertView;
-            if (itemView == null) {
+            if (itemView == null)
                 itemView = getLayoutInflater().inflate(R.layout.user_view,
                         parent, false);
-            }
 
             ScUser currentUser = manager.currentSeachUsers.get(position);
 

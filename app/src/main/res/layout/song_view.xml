@@ -10,7 +10,8 @@
         android:src="@mipmap/ic_launcher"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="false"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/SongIcon" />
 
     <TextView
         android:id="@+id/txtSongName"
@@ -28,7 +29,7 @@
         android:id="@+id/txtTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text="@string/txtPlayback"
         android:layout_alignBottom="@+id/imgIcon"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />

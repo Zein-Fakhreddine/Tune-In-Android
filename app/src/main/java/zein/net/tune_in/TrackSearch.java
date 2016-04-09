@@ -10,6 +10,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static zein.net.tune_in.Manager.manager;
+
 /**
  * Created by Zein's on 2/7/2016.
  */
@@ -53,7 +55,6 @@ public class TrackSearch extends IntentService {
                     JSONObject js = jArray.getJSONObject(i);
                     if(i == 0)
                         Manager.manager.currentSearchTracks.clear();
-                    jArray.getString(3);
                     Log.d("TUNEIN", "JSON: " + js.getString("uri"));
                     Track t = new Track(js, Track.TRACK_TYPE.SPOTIFY);
 
@@ -63,6 +64,8 @@ public class TrackSearch extends IntentService {
                 }
 
                 Manager.manager.doneSearching();
+                Manager.manager.isDisplayingSpotifyLikes = false;
+                manager.currentSpotifyOffset = 0;
             } catch (Exception e){
                 e.printStackTrace();
                 Manager.manager.doneSearching();

@@ -31,9 +31,8 @@ public class PlayAudio extends IntentService {
                 Log.e("TUNEIN", e.getLocalizedMessage());
                 e.printStackTrace();
             }
-        } else
-            if(manager.spotifyPlayer != null)
-                manager.spotifyPlayer.play("spotify:track:" + Manager.manager.currentPlayingTrack.getTrackId());
+        }
+
 
         manager.isTrackPlaying = true;
         manager.hasUserChoseSong = false;

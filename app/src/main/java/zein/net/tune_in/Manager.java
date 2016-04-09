@@ -18,14 +18,14 @@ public class Manager {
 
     public static final String serverIP = (DEBUG) ? "http://localhost:8000" : "https://tuneinbackend.herokuapp.com";
 
-    private final String USER_AGENT = "Mozilla/5.0";
+    public static final String USER_AGENT = "Mozilla/5.0";
 
     public static final String SPOTIFY_CLIENT_ID = "d6d5380ae25943f9ba03d499b0260675";
     public static final String REDIRECT_URI = "tunein://callback";
     public static final int REQUEST_CODE = 1337;
     public static Manager manager;
 
-    public String sessionName;
+    public String sessionName = "unknown";
     public Activity currentActivity;
 
     public ArrayList<Track> currentSearchTracks = new ArrayList<>();
@@ -50,6 +50,9 @@ public class Manager {
     public MediaPlayer mediaPlayer;
     public int currentIteration = 0;
     public Player spotifyPlayer;
+    public String spotifyToken = "";
+    public boolean isDisplayingSpotifyLikes = false;
+    public int currentSpotifyOffset = 0;
     public Track.TRACK_TYPE currentSearchType = Track.TRACK_TYPE.SOUNDCLOUD;
 
     public void doneSearching(){;
@@ -169,7 +172,6 @@ public class Manager {
 
             // optional default is GET
             con.setRequestMethod("GET");
-
             //add request header
             con.setRequestProperty("User-Agent", USER_AGENT);
 

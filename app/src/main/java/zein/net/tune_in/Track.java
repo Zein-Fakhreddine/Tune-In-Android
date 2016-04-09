@@ -88,7 +88,7 @@ public class Track {
 
 
     public void addVote(){
-        votes += 1;
+        votes++;
     }
 
 

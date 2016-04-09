@@ -86,7 +86,8 @@
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/imgAddSong"
         android:layout_toStartOf="@+id/imgAddSong"
-        android:alpha="1" />
+        android:alpha="1"
+        android:contentDescription="@string/soundcloud" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -97,6 +98,7 @@
         android:layout_toStartOf="@+id/imgSouncloud"
         android:layout_below="@+id/lstTracks"
         android:layout_toLeftOf="@+id/imgSouncloud"
-        android:alpha="1" />
+        android:alpha="1"
+        android:contentDescription="@string/spotify" />
 
 </RelativeLayout>
