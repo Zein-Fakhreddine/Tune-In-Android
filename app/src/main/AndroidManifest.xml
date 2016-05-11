@@ -49,6 +49,12 @@
             android:exported="false"/>
         <service android:name=".PlaylistSearch"
             android:exported="false"/>
+        <service android:name=".DisplayLikes"
+            android:exported="false"/>
+        <activity
+            android:name="com.spotify.sdk.android.authentication.LoginActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

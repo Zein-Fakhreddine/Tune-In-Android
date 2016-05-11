@@ -2,7 +2,6 @@ package zein.net.tune_in;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Log;
 
 import static zein.net.tune_in.Manager.manager;
 
@@ -14,29 +13,19 @@ public class PlayAudio extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent workIntent) {
-        Log.d("TUNEIN", "GOT HERE");
-        startSong();
-    }
-
-    private void startSong(){
-        Track trackToPlay = null;
-        for (int i = 0; i < manager.currentChosenTracks.size(); i++) {
-            Track track = manager.currentChosenTracks.get(i);
-            Log.d("TUNEIN", "Song:" + track.getTrackTitle() + " has: " + track.getVotes() + "votes");
-            if (trackToPlay == null || track.getVotes() > trackToPlay.getVotes())
-                trackToPlay = track;
+        /*
+        if(Manager.manager.currentPlayingTrack.getTrackType() == Track.TRACK_TYPE.SOUNDCLOUD) {
+            try {
+                manager.mediaPlayer.setDataSource(manager.scSearch.getStreamURL(Integer.parseInt(Manager.manager.currentPlayingTrack.getTrackId())));
+                manager.mediaPlayer.prepare();
+                manager.mediaPlayer.start();
+            } catch (Exception e) {
+                Log.e("TUNEIN", e.getLocalizedMessage());
+                e.printStackTrace();
+            }
         }
-
-        try {
-            manager.currentPlayingTrack = trackToPlay;
-            manager.mediaPlayer.setDataSource(SoundcloudSearch.getStreamURL("7c89e606e88c94ff47bfd84357e5e9f4", trackToPlay.getTrackId()));
-            manager.mediaPlayer.prepare();
-            manager.mediaPlayer.start();
-        } catch (Exception e) {
-            Log.e("TUNEIN", e.getLocalizedMessage());
-            e.printStackTrace();
-        }
-
+*/
+        manager.isTrackPlaying = true;
         manager.hasUserChoseSong = false;
         manager.sendRestart(manager.getHostKey(), manager.isServer, manager.currentUser);
         manager.currentChosenTracks.clear();

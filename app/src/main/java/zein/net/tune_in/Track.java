@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,51 +21,111 @@ public class Track {
     private String artWorkURL;
     private int likeCount;
     private int playbackCount;
-    private int trackId;
+    private int duration;
+    private String trackId;
     private int votes;
     private Bitmap trackBitMap;
     private boolean isStreamable;
-    
-    public Track(String trackJSON){
-        votes = 0;
+    private TRACK_TYPE trackType = TRACK_TYPE.UNDEFINED;
+    private boolean isLoadingBitmap = false;
+
+    public static enum TRACK_TYPE{
+        SPOTIFY,
+        SOUNDCLOUD,
+        UNDEFINED;
+    }
+
+    public Track(String trackJSON, TRACK_TYPE type){
+        this.trackType = type;
+        if(type == TRACK_TYPE.SOUNDCLOUD)
+            initSoundcloud(trackJSON);
+    }
+
+    public Track(JSONObject js, TRACK_TYPE type){
+        this.trackType = type;
+        if(type == TRACK_TYPE.SPOTIFY)
+            initSpotify(js);
+
+    }
+    public void initSoundcloud(String trackJSON){
         try{
             JSONObject obj = new JSONObject(trackJSON);
             trackTitle = obj.getString("title");
             artWorkURL = obj.getString("artwork_url");
             playbackCount = obj.getInt("playback_count");
-            trackId = obj.getInt("id");
+            trackId = String.valueOf(obj.getInt("id"));
             isStreamable = obj.getBoolean("streamable");
             votes = 0;
         } catch(JSONException e){
             e.printStackTrace();
             Log.d("TUNEIN", "error creating track");
         }
-        trackBitMap = getTrackBitMap();
+        loadBitmap();
     }
+
+    public void initSpotify(JSONObject js){
+        try{
+            Log.d("TUNEIN", "this is working");
+            trackTitle = js.getString("name");
+            JSONObject jAlbum = js.getJSONObject("album");
+            JSONArray jImages = jAlbum.getJSONArray("images");
+            for(int i = 0; i < jImages.length(); i++){
+                JSONObject jType = jImages.getJSONObject(i);
+                if(jType.getInt("width") == 300 || jType.getInt("height") == 300)
+                    this.artWorkURL = jType.getString("url");
+                Log.d("TUNEIN","ARTwork: " + this.artWorkURL);
+                playbackCount = -1;
+                trackId = js.getString("id");
+                duration = js.getInt("duration_ms");
+                isStreamable = true;
+            }
+            loadBitmap();
+        } catch (Exception e){
+            e.printStackTrace();
+            Log.d("TUNEIN", "error creating track");
+        }
+    }
+
 
     public void addVote(){
-        votes += 1;
+        votes++;
     }
 
-    public void removeVote(){
-        votes -= 1;
-    }
 
     public void setVote(int votes){
         this.votes = votes;
     }
-    private Bitmap getTrackBitMap(){
+
+    public void setIsLoadingBitmap(boolean isLoadingBitmap){this.isLoadingBitmap = isLoadingBitmap;}
+
+    public static Track getTrack(String trackId, TRACK_TYPE type){
+        if(type == TRACK_TYPE.SOUNDCLOUD)
+            return new Track(Manager.manager.scSearch.getTrack(Integer.parseInt(trackId)), type);
+        else{
+            try{
+                return new Track(new JSONObject(Manager.manager.spSearch.getTrack(trackId)), type);
+            } catch (Exception e){
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+    public void loadBitmap(){
+        isLoadingBitmap = true;
         try {
             Bitmap bmp;
             URL url = new URL(artWorkURL);
             bmp =  BitmapFactory.decodeStream(url.openConnection()
                     .getInputStream());
 
-            return bmp;
+            trackBitMap = bmp;
         } catch (Exception ex) {
-            return null;
+            ex.printStackTrace();
         }
+        isLoadingBitmap = false;
     }
+
+    public TRACK_TYPE getTrackType(){return trackType;}
     public String getTrackTitle(){
         return trackTitle;
     }
@@ -85,7 +146,9 @@ public class Track {
         return playbackCount;
     }
 
-    public int getTrackId(){
+    public int getDuration(){return duration;}
+
+    public String getTrackId(){
         return trackId;
     }
 
@@ -98,4 +161,6 @@ public class Track {
     }
 
     public boolean isStreamable(){return isStreamable;}
+
+    public boolean isLoadingBitmap(){return isLoadingBitmap;}
 }

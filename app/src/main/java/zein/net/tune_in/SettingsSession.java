@@ -20,6 +20,13 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.Spotify;
+
 import java.util.ArrayList;
 
 import static zein.net.tune_in.Manager.manager;
@@ -28,8 +35,8 @@ import static zein.net.tune_in.Manager.manager;
  */
 public class SettingsSession extends Activity implements View.OnClickListener{
 
-    private Button btnLink;
-    private ProgressBar pbLoading;
+    private Button btnLink, btnSpotifyLink;
+    private ProgressBar pbLoading, pbSpotifyLoading;
     private TextView soundcloudUser;
     private AlertDialog.Builder chooseDialog;
     private Button btnBackupPlayList;
@@ -53,11 +60,14 @@ public class SettingsSession extends Activity implements View.OnClickListener{
     private void initView(){
         btnLink = (Button) findViewById(R.id.btnLink);
         btnLink.setOnClickListener(this);
+        btnSpotifyLink = (Button) findViewById(R.id.btnSpotifyLink);
+        btnSpotifyLink.setOnClickListener(this);
         btnBackupPlayList = (Button) findViewById(R.id.btnBackupPlaylist);
         btnBackupPlayList.setOnClickListener(this);
         swChooseRandomly = (Switch) findViewById(R.id.swChooseRandomly);
         currentPlayList = (TextView) findViewById(R.id.txtCurrentPlaylist);
         pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
+        pbSpotifyLoading = (ProgressBar)findViewById(R.id.pbLoadingSpotify);
         soundcloudUser = (TextView) findViewById(R.id.txtSoundcloudUsername);
     }
 
@@ -82,6 +92,51 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         handler.postDelayed(r, 500);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        Log.d("TUNEIN", String.valueOf(requestCode));
+        // Check if result comes from the correct activity
+        if (requestCode == Manager.REQUEST_CODE) {
+            Log.d("TUNEIN", "GOODIN");
+            final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+                Log.d("TUNEIN", "Best");
+                Config playerConfig = new Config(this, response.getAccessToken(), Manager.SPOTIFY_CLIENT_ID);
+                Log.d("TUNEIN", response.getAccessToken());
+                Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+                    @Override
+                    public void onInitialized(Player player) {
+                        manager.spotifyToken = response.getAccessToken();
+                        manager.mediaManager.setSpotifyPlayer(player);
+
+                        Log.d("TUNEIN", "Connected");
+                        manager.isLinkedWithSpotify = true;
+                        pbSpotifyLoading.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("TUNEIN", "Could not initialize player: " + throwable.getMessage());
+                        error("Unexpected error occured");
+                    }
+                });
+            }
+        }
+    }
+
+    private AlertDialog.Builder error(final String errorMessage){
+        final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
+        errorDialog.setTitle(errorMessage);
+        errorDialog.setPositiveButton("OK", null);
+        errorDialog.setNegativeButton("Cancel", null);
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                errorDialog.show();
+            }
+        });
+        return errorDialog;
+    }
     private void chooseUser(){
         if(manager.currentSeachUsers.size() == 0){
             Log.d("TUNEIN", "No users");
@@ -119,6 +174,17 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         if(btnBackupPlayList.getId() == v.getId()){
             showPlaylistSearchDialog();
         }
+        if(btnSpotifyLink.getId()== v.getId()){
+            if(!manager.isLinkedWithSpotify){
+                pbSpotifyLoading.setVisibility(View.VISIBLE);
+                AuthenticationRequest.Builder builder =
+                        new AuthenticationRequest.Builder(Manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, Manager.REDIRECT_URI);
+                builder.setScopes(new String[]{"user-library-read", "streaming"});
+                AuthenticationRequest request = builder.build();
+
+                AuthenticationClient.openLoginActivity(this, Manager.REQUEST_CODE, request);
+            }
+        }
     }
 
     private AlertDialog.Builder showSearchDialog(){
@@ -135,9 +201,7 @@ public class SettingsSession extends Activity implements View.OnClickListener{
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
-                    if(search.getText().toString().length() == 0)
-                        return false; //TODO: Do Somehting when the user doesnt input anything
-
+                    searchUser(search.getText().toString());
                     return true;
                 }
                 return false;
@@ -170,13 +234,7 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         search.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
-                    if(search.getText().toString().length() == 0)
-                        return false; //TODO: Do Somehting when the user doesnt input anything
-
-                    return true;
-                }
-                return false;
+                return (event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) && search.getText().toString().length() != 0;
             }
         });
         // Set up the buttons
@@ -216,12 +274,10 @@ public class SettingsSession extends Activity implements View.OnClickListener{
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
             View itemView = convertView;
-            if (itemView == null) {
+            if (itemView == null)
                 itemView = getLayoutInflater().inflate(R.layout.user_view,
                         parent, false);
-            }
 
             ScUser currentUser = manager.currentSeachUsers.get(position);
 

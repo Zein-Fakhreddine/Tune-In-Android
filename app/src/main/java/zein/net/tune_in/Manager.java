@@ -1,7 +1,6 @@
 package zein.net.tune_in;
 
 import android.app.Activity;
-import android.media.MediaPlayer;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -10,17 +9,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * Created by Zein's on 2/2/2016.
- * Manages everything for the users
- */
 public class Manager {
 
     public static final String serverIP = "https://tuneinbackend.herokuapp.com";
-    private final String USER_AGENT = "Mozilla/5.0";
+
+    public static final String USER_AGENT = "Mozilla/5.0";
+
+    public static final String SPOTIFY_CLIENT_ID = "d6d5380ae25943f9ba03d499b0260675";
+    public static final String REDIRECT_URI = "tunein://callback";
+    public static final int REQUEST_CODE = 1337;
     public static Manager manager;
 
-    public String sessionName;
+    public String sessionName = "unknown";
     public Activity currentActivity;
 
     public ArrayList<Track> currentSearchTracks = new ArrayList<>();
@@ -31,6 +31,8 @@ public class Manager {
 
     public User currentUser;
 
+    public SoundcloudSearch scSearch = new SoundcloudSearch("7c89e606e88c94ff47bfd84357e5e9f4");
+    public SpotifySearch spSearch = new SpotifySearch();
     public boolean isUserSearching = false;
     public boolean isUserSearchingForUser = false;
     public boolean isUserSearchingForPlaylist = false;
@@ -38,13 +40,15 @@ public class Manager {
     public boolean hasUserVotedForSong = false;
     public boolean isServer = false;
     public boolean isChoosing = false;
-    public boolean updateSearchAdapter = false;
-    public boolean restart = false;
-    public MediaPlayer mediaPlayer;
-
-    public void setTracks(ArrayList<Track> tracks){
-        currentSearchTracks.clear();
-        currentSearchTracks.addAll(tracks);
+    public boolean isLinkedWithSpotify = false;
+    public boolean isTrackPlaying = false;
+    public int currentIteration = 0;
+    public String spotifyToken = "";
+    public boolean isDisplayingSpotifyLikes = false;
+    public int currentSpotifyOffset = 0;
+    public Track.TRACK_TYPE currentSearchType = Track.TRACK_TYPE.SOUNDCLOUD;
+    public MediaManager mediaManager = new MediaManager();
+    public void doneSearching(){
         this.isUserSearching = false;
     }
 
@@ -104,21 +108,6 @@ public class Manager {
         return hostKey;
     }
 
-    public boolean isServerOnline(){
-        try {
-            HttpURLConnection.setFollowRedirects(false);
-            // note : you may also need
-            //        HttpURLConnection.setInstanceFollowRedirects(false)
-            HttpURLConnection con =
-                    (HttpURLConnection) new URL(Manager.serverIP).openConnection();
-            con.setRequestMethod("HEAD");
-            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     /**
      * Sends data to the serer and reads what is recieved
      * @param data The data you want to send
@@ -163,24 +152,11 @@ public class Manager {
 
             // optional default is GET
             con.setRequestMethod("GET");
-
             //add request header
             con.setRequestProperty("User-Agent", USER_AGENT);
 
             int responseCode = con.getResponseCode();
             System.out.println("Response Code : " + responseCode);
-
-            /*
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-
-            in.close();
-            */
         } catch(Exception e){
             e.printStackTrace();
         }

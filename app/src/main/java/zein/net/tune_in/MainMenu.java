@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -16,16 +17,23 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.Spotify;
+
 import static zein.net.tune_in.Manager.manager;
-/**
- * Created by Zein's on 2/2/2016.
- */
+
 public class MainMenu extends Activity{
     
     private Button btnHost, btnJoin;
     private EditText txtKey, txtName;
     private TextView txtLoadMessage;
     private ProgressBar pbLoading;
+    private boolean isConnecting;
+    private String sessionName, userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +41,43 @@ public class MainMenu extends Activity{
         setContentView(R.layout.activit_main_menu);
         initManager();
         initView();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        Log.d("TUNEIN", String.valueOf(requestCode));
+        // Check if result comes from the correct activity
+        if (requestCode == Manager.REQUEST_CODE) {
+            Log.d("TUNEIN", "GOODIN");
+            final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+                Log.d("TUNEIN", "Best");
+                Config playerConfig = new Config(this, response.getAccessToken(), Manager.SPOTIFY_CLIENT_ID);
+                Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+                    @Override
+                    public void onInitialized(Player player) {
+                        manager.spotifyToken = response.getAccessToken();
+                        manager.mediaManager.setSpotifyPlayer(player);
+                        startServer(userName, sessionName);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("TUNEIN", "Could not initialize player: " + throwable.getMessage());
+                        error("Error connecting to Spotify");
+                    }
+                });
+            }
+            else
+                error("We're having trouble authenticating your Spotify account");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Spotify.destroyPlayer(this);
+        super.onDestroy();
     }
 
     private void initManager(){
@@ -57,12 +102,6 @@ public class MainMenu extends Activity{
                 return;
             }
 
-            /* TODO: Work on this
-            if(!manager.isServerOnline()){
-                error("Could not find the server!");
-                return;
-            }
-            */
            final String name = txtName.getText().toString();
             if(name.length() == 0 || getOnlySpaces(name)){
                 error("Fill in the session name");
@@ -75,7 +114,6 @@ public class MainMenu extends Activity{
             }
 
             getUsername(name, true);
-
         }
         if(v.getId() == btnJoin.getId()){
             //Make sure they typed something
@@ -124,6 +162,20 @@ public class MainMenu extends Activity{
                             return false;
                         }
 
+                        if(isConnecting){
+                            error("You are already connecting");
+                            return false;
+                        }
+
+                        if(manager.mediaManager.getSpotifyPlayer() == null){
+                            if(isHosting) {
+                                requestSpotify();
+                                userName = search.getText().toString();
+                                sessionName = name;
+                                return false;
+                            }
+                        }
+
                         if(isHosting)
                             startServer(search.getText().toString(), name);
                         else
@@ -154,6 +206,15 @@ public class MainMenu extends Activity{
                         return;
                     }
 
+                    if(manager.mediaManager.getSpotifyPlayer() == null){
+                        if(isHosting) {
+                            requestSpotify();
+                            userName = search.getText().toString();
+                            sessionName = name;
+                            return;
+                        }
+                    }
+
                     if(isHosting)
                         startServer(search.getText().toString(), name);
                     else
@@ -176,26 +237,34 @@ public class MainMenu extends Activity{
         nameDialog.show();
     }
 
+    private void requestSpotify(){
+        AuthenticationRequest.Builder builder =
+                new AuthenticationRequest.Builder(Manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, Manager.REDIRECT_URI);
+        builder.setScopes(new String[]{"user-library-read", "streaming"});
+        AuthenticationRequest request = builder.build();
+
+        AuthenticationClient.openLoginActivity(this, Manager.REQUEST_CODE, request);
+    }
+
     private AlertDialog.Builder error(final String errorMessage){
         final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
         errorDialog.setTitle(errorMessage);
         errorDialog.setPositiveButton("OK", null);
         errorDialog.setNegativeButton("Cancel", null);
-
         this.runOnUiThread(new Runnable() {
             public void run() {
                 errorDialog.show();
             }
         });
-
         return errorDialog;
     }
 
     private void startServer(final String username, final String sessionName){
-
         Thread thread = new Thread() {
             public void run() {
                 try{
+                    Log.d("TUNEIN", "This got called");
+                    isConnecting = true;
                     manager.sessionName = sessionName;
                     manager.currentUser = new User(username);
                     setLoadMessage("Attempting to host server");
@@ -206,6 +275,7 @@ public class MainMenu extends Activity{
                     loadTuneIn();
                 } catch (Exception e){
                     e.printStackTrace();
+                    isConnecting = false;
                     error("There was an error trying to host a server");
                 }
             }
@@ -214,13 +284,14 @@ public class MainMenu extends Activity{
     }
 
     private void joinServer(final String username,final String sessionKey){
-
         Thread thread = new Thread() {
             public void run() {
+                isConnecting = true;
                 setLoadMessage("Checking if server exists");
                 if(!manager.checkServerExists(sessionKey)){
                     error("Can not find a server with the key: " + sessionKey);
                     cancelLoading();
+                    isConnecting = false;
                     return;
                 }
                 manager.currentUser = new User(username);
@@ -231,8 +302,9 @@ public class MainMenu extends Activity{
                 if(code.equals("gg"))
                     loadTuneIn();
                 else{
-                    error((code.equals("ht")) ? "This username has already been taken" : "there was an error added the user");
+                    error((code.equals("ht")) ? "This username has already been taken" : "there was an error adding the user");
                     cancelLoading();
+                    isConnecting = false;
                 }
             }
         };

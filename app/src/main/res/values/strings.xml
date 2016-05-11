@@ -9,4 +9,19 @@
     <string name="session_name">Session name:</string>
     <string name="host_session">Host Session</string>
     <string name="join_session">Join Session</string>
+    <string name="soundcloud">Soundcloud</string>
+    <string name="spotify">Spotify</string>
+    <string name="txtsoundcloud">Soundcloud:</string>
+    <string name="link">Link With Soundcloud</string>
+    <string name="soundcloudusername">Current Username:</string>
+    <string name="txttunein">Tune In:</string>
+    <string name="backupplaylist">Set Backup Playlist</string>
+    <string name="currentplaylist">Current Playlist:</string>
+    <string name="chooserandomly">Choose Randomly</string>
+    <string name="txtspotify">Spotify:</string>
+    <string name="spotifylink">Link With Spotify</string>
+    <string name="SongIcon">SongIcon</string>
+    <string name="txtPlayback">TextView</string>
+    <string name="userProfile">UserProfile</string>
+    <string name="usernamesearch">Name</string>
 </resources>
