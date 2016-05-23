@@ -9,8 +9,6 @@ public class User {
 
     private String userName;
     private Track votedTrack;
-    private ScUser soundcloudUser;
-
     public User(String username) {
         this.userName = username;
     }
@@ -21,10 +19,6 @@ public class User {
 
     public void setVotedTrack(Track votedTrack) {
         this.votedTrack = votedTrack;
-    }
-
-    public void setSoundcloudUser(ScUser soundcloudUser) {
-        this.soundcloudUser = soundcloudUser;
     }
 
     public String getUserName() {
@@ -39,5 +33,4 @@ public class User {
         return votedTrack;
     }
 
-    public ScUser getSoundcloudUser(){ return soundcloudUser; }
 }

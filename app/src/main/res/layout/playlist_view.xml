@@ -6,7 +6,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imgProfile"
+        android:id="@+id/imgArtwork"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -18,10 +18,22 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/usernamesearch"
-        android:id="@+id/txtUserName"
-        android:layout_alignBottom="@+id/imgProfile"
-        android:layout_toRightOf="@+id/imgProfile"
-        android:layout_toEndOf="@+id/imgProfile"
+        android:id="@+id/txtPlaylistName"
+        android:layout_alignBottom="@+id/imgArtwork"
+        android:layout_toRightOf="@+id/imgArtwork"
+        android:layout_toEndOf="@+id/imgArtwork"
         android:layout_marginLeft="34dp"
         android:layout_marginStart="34dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/count"
+        android:id="@+id/txtTrackCount"
+        android:layout_alignBottom="@+id/txtPlaylistName"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="41dp"
+        android:layout_marginEnd="41dp" />
 </RelativeLayout>

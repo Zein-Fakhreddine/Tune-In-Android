@@ -40,16 +40,7 @@
 
 
         <service
-            android:name=".TrackSearch"
-            android:exported="false"/>
-        <service
             android:name=".PlayAudio"
-            android:exported="false"/>
-        <service android:name=".UserSearch"
-            android:exported="false"/>
-        <service android:name=".PlaylistSearch"
-            android:exported="false"/>
-        <service android:name=".DisplayLikes"
             android:exported="false"/>
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"

@@ -48,12 +48,12 @@ public class MainMenu extends Activity{
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d("TUNEIN", String.valueOf(requestCode));
         // Check if result comes from the correct activity
-        if (requestCode == Manager.REQUEST_CODE) {
+        if (requestCode == MediaManager.REQUEST_CODE) {
             Log.d("TUNEIN", "GOODIN");
             final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
                 Log.d("TUNEIN", "Best");
-                Config playerConfig = new Config(this, response.getAccessToken(), Manager.SPOTIFY_CLIENT_ID);
+                Config playerConfig = new Config(this, response.getAccessToken(), MediaManager.SPOTIFY_CLIENT_ID);
                 Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
                     @Override
                     public void onInitialized(Player player) {
@@ -239,11 +239,11 @@ public class MainMenu extends Activity{
 
     private void requestSpotify(){
         AuthenticationRequest.Builder builder =
-                new AuthenticationRequest.Builder(Manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, Manager.REDIRECT_URI);
+                new AuthenticationRequest.Builder(MediaManager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, MediaManager.REDIRECT_URI);
         builder.setScopes(new String[]{"user-library-read", "streaming"});
         AuthenticationRequest request = builder.build();
 
-        AuthenticationClient.openLoginActivity(this, Manager.REQUEST_CODE, request);
+        AuthenticationClient.openLoginActivity(this, MediaManager.REQUEST_CODE, request);
     }
 
     private AlertDialog.Builder error(final String errorMessage){

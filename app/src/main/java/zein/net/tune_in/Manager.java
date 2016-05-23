@@ -15,49 +15,28 @@ public class Manager {
 
     public static final String USER_AGENT = "Mozilla/5.0";
 
-    public static final String SPOTIFY_CLIENT_ID = "d6d5380ae25943f9ba03d499b0260675";
-    public static final String REDIRECT_URI = "tunein://callback";
-    public static final int REQUEST_CODE = 1337;
     public static Manager manager;
 
     public String sessionName = "unknown";
     public Activity currentActivity;
 
-    public ArrayList<Track> currentSearchTracks = new ArrayList<>();
     public ArrayList<Track> currentChosenTracks = new ArrayList<>();
-    public ArrayList<ScUser> currentSeachUsers = new ArrayList<>();
-    public Track currentPlayingTrack;
     private String hostKey = "Null";
 
     public User currentUser;
 
-    public SoundcloudSearch scSearch = new SoundcloudSearch("7c89e606e88c94ff47bfd84357e5e9f4");
-    public SpotifySearch spSearch = new SpotifySearch();
     public boolean isUserSearching = false;
-    public boolean isUserSearchingForUser = false;
-    public boolean isUserSearchingForPlaylist = false;
     public boolean hasUserChoseSong = false;
     public boolean hasUserVotedForSong = false;
     public boolean isServer = false;
     public boolean isChoosing = false;
     public boolean isLinkedWithSpotify = false;
-    public boolean isTrackPlaying = false;
     public int currentIteration = 0;
     public String spotifyToken = "";
     public boolean isDisplayingSpotifyLikes = false;
     public int currentSpotifyOffset = 0;
-    public Track.TRACK_TYPE currentSearchType = Track.TRACK_TYPE.SOUNDCLOUD;
     public MediaManager mediaManager = new MediaManager();
-    public void doneSearching(){
-        this.isUserSearching = false;
-    }
 
-    public void setUsers(ArrayList<ScUser> users){
-        currentSeachUsers.clear();
-        currentSeachUsers.addAll(users);
-        this.isUserSearchingForUser = false;
-        this.isChoosing = true;
-    }
 
     private String convertToSendableString(String toConvert){
         String convertedString = null;
@@ -78,7 +57,8 @@ public class Manager {
     }
 
     public String sendUser(String serverKey, User user){
-       return getData("/user&name=" + convertToSendableString(user.getUserName()) + "&key=" + serverKey).toString();
+        currentUser = new User( convertToSendableString(user.getUserName()));
+       return getData("/user&name=" +  currentUser.getUserName() + "&key=" + serverKey).toString();
     }
 
     public void sendUsersChosenSong(String serverKey, User user){
@@ -102,7 +82,7 @@ public class Manager {
     }
 
     public String sendRestart(String serverKey, boolean isServer, User user){
-        return getData("/restart" + "&name=" + convertToSendableString(user.getUserName()) + "&server=" + String.valueOf(isServer) + "&key=" + serverKey).toString();
+        return getData("/restart" + "&name=" + user.getUserName() + "&server=" + String.valueOf(isServer) + "&key=" + serverKey).toString();
     }
     public String getHostKey(){
         return hostKey;

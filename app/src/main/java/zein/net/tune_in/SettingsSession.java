@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -27,21 +26,25 @@ import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import static zein.net.tune_in.Manager.manager;
+
 /**
  * Created by Zein's on 3/18/2016.
  */
-public class SettingsSession extends Activity implements View.OnClickListener{
+public class SettingsSession extends Activity implements View.OnClickListener {
 
     private Button btnLink, btnSpotifyLink;
-    private ProgressBar pbLoading, pbSpotifyLoading;
-    private TextView soundcloudUser;
+    private ProgressBar pbSpotifyLoading;
     private AlertDialog.Builder chooseDialog;
     private Button btnBackupPlayList;
     private TextView currentPlayList;
     private Switch swChooseRandomly;
+    ArrayList<Playlist> playlists;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,60 +52,39 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         setContentView(R.layout.settings_view);
         initView();
         initManager();
-        updateList();
-        Bundle extras = getIntent().getExtras();
-        if(extras != null){
-            if(extras.getBoolean("Link"))
-                showSearchDialog();
-        }
+        playlists = new ArrayList<>();
     }
 
-    private void initView(){
-        btnLink = (Button) findViewById(R.id.btnLink);
-        btnLink.setOnClickListener(this);
+    private void initView() {
         btnSpotifyLink = (Button) findViewById(R.id.btnSpotifyLink);
         btnSpotifyLink.setOnClickListener(this);
         btnBackupPlayList = (Button) findViewById(R.id.btnBackupPlaylist);
         btnBackupPlayList.setOnClickListener(this);
         swChooseRandomly = (Switch) findViewById(R.id.swChooseRandomly);
+        swChooseRandomly.setChecked(manager.mediaManager.isChoosingRandomlyFromBp());
+        swChooseRandomly.setOnClickListener(this);
         currentPlayList = (TextView) findViewById(R.id.txtCurrentPlaylist);
-        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
-        pbSpotifyLoading = (ProgressBar)findViewById(R.id.pbLoadingSpotify);
-        soundcloudUser = (TextView) findViewById(R.id.txtSoundcloudUsername);
+        if(manager.mediaManager.getBackupPlaylist() != null)
+            currentPlayList.setText("Current Playlist: " + manager.mediaManager.getBackupPlaylist().getPlaylistName());
+        pbSpotifyLoading = (ProgressBar) findViewById(R.id.pbLoadingSpotify);
     }
 
-    private void initManager(){
+    private void initManager() {
         manager.currentActivity = this;
     }
 
-    private void updateList() {
-        final android.os.Handler handler = new android.os.Handler();
-
-        final Runnable r = new Runnable() {
-            public void run() {
-                if (!manager.isUserSearchingForUser && manager.isChoosing){
-                    chooseUser();
-                    manager.isChoosing = false;
-                    pbLoading.setVisibility(View.INVISIBLE);
-                }
-                handler.postDelayed(this, 500);
-            }
-        };
-
-        handler.postDelayed(r, 500);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d("TUNEIN", String.valueOf(requestCode));
         // Check if result comes from the correct activity
-        if (requestCode == Manager.REQUEST_CODE) {
+        if (requestCode == MediaManager.REQUEST_CODE) {
             Log.d("TUNEIN", "GOODIN");
             final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
                 Log.d("TUNEIN", "Best");
-                Config playerConfig = new Config(this, response.getAccessToken(), Manager.SPOTIFY_CLIENT_ID);
+                Config playerConfig = new Config(this, response.getAccessToken(), MediaManager.SPOTIFY_CLIENT_ID);
                 Log.d("TUNEIN", response.getAccessToken());
                 Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
                     @Override
@@ -125,7 +107,7 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         }
     }
 
-    private AlertDialog.Builder error(final String errorMessage){
+    private AlertDialog.Builder error(final String errorMessage) {
         final AlertDialog.Builder errorDialog = new AlertDialog.Builder(this);
         errorDialog.setTitle(errorMessage);
         errorDialog.setPositiveButton("OK", null);
@@ -137,93 +119,34 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         });
         return errorDialog;
     }
-    private void chooseUser(){
-        if(manager.currentSeachUsers.size() == 0){
-            Log.d("TUNEIN", "No users");
-            return;
-        }
-        chooseDialog = new AlertDialog.Builder(SettingsSession.this);
-        chooseDialog.setTitle("Choose your userame")
-                .setAdapter(new UserListAdapter(manager.currentSeachUsers), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            Log.d("TUNEIN", "Chose user with the name: " + manager.currentSeachUsers.get(which));
-                            manager.currentUser.setSoundcloudUser(manager.currentSeachUsers.get(which));
-                            soundcloudUser.setText("Current Username: " + manager.currentUser.getSoundcloudUser().getName());
-                        } catch (Exception e) {
-                            Log.d("TUNEIN","There was an error choosing");
-                            e.printStackTrace();
-                        }
-                    }
-                });
 
-        try{
-            chooseDialog.show();
-        } catch (WindowManager.BadTokenException e){
-            e.printStackTrace();
-        }
-
-    }
 
     @Override
     public void onClick(View v) {
-        if(btnLink.getId() == v.getId()){
-            showSearchDialog();
-        }
-        if(btnBackupPlayList.getId() == v.getId()){
+        if (btnBackupPlayList.getId() == v.getId())
             showPlaylistSearchDialog();
-        }
-        if(btnSpotifyLink.getId()== v.getId()){
-            if(!manager.isLinkedWithSpotify){
+
+        if (btnSpotifyLink.getId() == v.getId()) {
+            if (!manager.isLinkedWithSpotify) {
                 pbSpotifyLoading.setVisibility(View.VISIBLE);
                 AuthenticationRequest.Builder builder =
-                        new AuthenticationRequest.Builder(Manager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, Manager.REDIRECT_URI);
+                        new AuthenticationRequest.Builder(MediaManager.SPOTIFY_CLIENT_ID, AuthenticationResponse.Type.TOKEN, MediaManager.REDIRECT_URI);
                 builder.setScopes(new String[]{"user-library-read", "streaming"});
                 AuthenticationRequest request = builder.build();
 
-                AuthenticationClient.openLoginActivity(this, Manager.REQUEST_CODE, request);
+                AuthenticationClient.openLoginActivity(this, MediaManager.REQUEST_CODE, request);
             }
+        }
+        if(swChooseRandomly.getId() == v.getId()){
+            manager.mediaManager.setChoosingRandomlyFromBp(!manager.mediaManager.isChoosingRandomlyFromBp());
+            swChooseRandomly.setChecked(manager.mediaManager.isChoosingRandomlyFromBp());
         }
     }
 
-    private AlertDialog.Builder showSearchDialog(){
+
+    private AlertDialog.Builder showPlaylistSearchDialog() {
         final AlertDialog.Builder nameDialog = new AlertDialog.Builder(this);
-        nameDialog.setTitle("Search for your soundcloud: ");
-
-        //Set up the text search
-        final EditText search = new EditText(this);
-
-        search.setInputType(InputType.TYPE_CLASS_TEXT);
-
-        nameDialog.setView(search);
-        search.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))) {
-                    searchUser(search.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
-        // Set up the buttons
-        nameDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                searchUser(search.getText().toString());
-            }
-        });
-        nameDialog.setNegativeButton("Cancel", null);
-
-        nameDialog.show();
-
-        return nameDialog;
-    }
-
-    private AlertDialog.Builder showPlaylistSearchDialog(){
-        final AlertDialog.Builder nameDialog = new AlertDialog.Builder(this);
-        nameDialog.setTitle("Search for a Soundcloud playlist: ");
+        nameDialog.setTitle("Search for a Spotify playlist: ");
 
         //Set up the text search
         final EditText search = new EditText(this);
@@ -251,43 +174,93 @@ public class SettingsSession extends Activity implements View.OnClickListener{
         return nameDialog;
     }
 
-    private void searchUser(String search){
-        Intent userSearch = new Intent(this, UserSearch.class);
-        userSearch.setData(Uri.parse(search));
-        this.startService(userSearch);
-        manager.isUserSearchingForUser = true;
-        pbLoading.setVisibility(View.VISIBLE);
+    private void searchPlaylist(final String search) {
+        pbSpotifyLoading.setVisibility(View.VISIBLE);
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject fullJson = new JSONObject(Manager.manager.mediaManager.getSpotifySearch().searchPlaylists(search, 0, 10));
+                    JSONObject trackJson = fullJson.getJSONObject("playlists");
+                    JSONArray jArray = trackJson.getJSONArray("items");
+
+                    for (int i = 0; i < jArray.length(); i++) {
+                        JSONObject js = jArray.getJSONObject(i);
+
+                        Log.d("TUNEIN", "JSON: " + js.getString("uri"));
+                        Playlist p = new Playlist(js);
+
+                        playlists.add(p);
+                    }
+                    Manager.manager.isDisplayingSpotifyLikes = false;
+                    manager.currentSpotifyOffset = 0;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            choosePlayList();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        };
+        thread.start();
     }
 
-    private void searchPlaylist(String search){
-        Intent playlistSearch = new Intent(this, PlaylistSearch.class);
-        playlistSearch.setData(Uri.parse(search));
-        this.startService(playlistSearch);
-        manager.isUserSearchingForPlaylist = true;
-        pbLoading.setVisibility(View.VISIBLE);
+    private void choosePlayList(){
+        pbSpotifyLoading.setVisibility(View.INVISIBLE);
+        chooseDialog = new AlertDialog.Builder(SettingsSession.this);
+        chooseDialog.setTitle("Choose the backup playlist")
+                .setAdapter(new PlaylistAdapter(playlists), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            manager.mediaManager.setBackupPlaylist(playlists.get(which));
+                            currentPlayList.setText("Current Playlist: " + playlists.get(which).getPlaylistName());
+                        } catch (Exception e) {
+                            Log.d("TUNEIN","There was an error choosing");
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+        try{
+            chooseDialog.show();
+        } catch (WindowManager.BadTokenException e){
+            e.printStackTrace();
+        }
+
     }
 
-    private class UserListAdapter extends ArrayAdapter<ScUser> {
-        public UserListAdapter(ArrayList<ScUser> users){
-            super(SettingsSession.this, R.layout.user_view, users);
+    private class PlaylistAdapter extends ArrayAdapter<Playlist> {
+        public PlaylistAdapter(ArrayList<Playlist> playlists) {
+            super(SettingsSession.this, R.layout.playlist_view, playlists);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View itemView = convertView;
+            Log.d("TUNEIN", "This was called here!!!");
             if (itemView == null)
-                itemView = getLayoutInflater().inflate(R.layout.user_view,
+                itemView = getLayoutInflater().inflate(R.layout.playlist_view,
                         parent, false);
 
-            ScUser currentUser = manager.currentSeachUsers.get(position);
-
-            ImageView avatar = (ImageView) itemView.findViewById(R.id.imgProfile);
-            avatar.setImageBitmap(currentUser.getUserBitMap());
+            Playlist currentPlaylist = playlists.get(position);
+            Log.d("TUNEIN", "We also got here");
+            ImageView avatar = (ImageView) itemView.findViewById(R.id.imgArtwork);
+            avatar.setImageBitmap(currentPlaylist.getPlaylistArtwork());
             avatar.getLayoutParams().width = 250;
             avatar.getLayoutParams().height = 250;
 
-            TextView txtName = (TextView) itemView.findViewById(R.id.txtUserName);
-            txtName.setText(currentUser.getName());
+            TextView txtName = (TextView) itemView.findViewById(R.id.txtPlaylistName);
+            txtName.setText(currentPlaylist.getPlaylistName());
+
+            TextView txtTrackcount = (TextView) itemView.findViewById(R.id.txtTrackCount);
+            txtTrackcount.setText("Count: " + String.valueOf(currentPlaylist.getTrackCount()));
             return itemView;
         }
     }

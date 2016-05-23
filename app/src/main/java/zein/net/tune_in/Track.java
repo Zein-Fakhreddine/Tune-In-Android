@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -26,44 +25,11 @@ public class Track {
     private int votes;
     private Bitmap trackBitMap;
     private boolean isStreamable;
-    private TRACK_TYPE trackType = TRACK_TYPE.UNDEFINED;
+
     private boolean isLoadingBitmap = false;
 
-    public static enum TRACK_TYPE{
-        SPOTIFY,
-        SOUNDCLOUD,
-        UNDEFINED;
-    }
 
-    public Track(String trackJSON, TRACK_TYPE type){
-        this.trackType = type;
-        if(type == TRACK_TYPE.SOUNDCLOUD)
-            initSoundcloud(trackJSON);
-    }
-
-    public Track(JSONObject js, TRACK_TYPE type){
-        this.trackType = type;
-        if(type == TRACK_TYPE.SPOTIFY)
-            initSpotify(js);
-
-    }
-    public void initSoundcloud(String trackJSON){
-        try{
-            JSONObject obj = new JSONObject(trackJSON);
-            trackTitle = obj.getString("title");
-            artWorkURL = obj.getString("artwork_url");
-            playbackCount = obj.getInt("playback_count");
-            trackId = String.valueOf(obj.getInt("id"));
-            isStreamable = obj.getBoolean("streamable");
-            votes = 0;
-        } catch(JSONException e){
-            e.printStackTrace();
-            Log.d("TUNEIN", "error creating track");
-        }
-        loadBitmap();
-    }
-
-    public void initSpotify(JSONObject js){
+    public Track(JSONObject js){
         try{
             Log.d("TUNEIN", "this is working");
             trackTitle = js.getString("name");
@@ -98,34 +64,42 @@ public class Track {
 
     public void setIsLoadingBitmap(boolean isLoadingBitmap){this.isLoadingBitmap = isLoadingBitmap;}
 
-    public static Track getTrack(String trackId, TRACK_TYPE type){
-        if(type == TRACK_TYPE.SOUNDCLOUD)
-            return new Track(Manager.manager.scSearch.getTrack(Integer.parseInt(trackId)), type);
-        else{
+    public static Track getTrack(String trackId){
             try{
-                return new Track(new JSONObject(Manager.manager.spSearch.getTrack(trackId)), type);
+                return new Track(new JSONObject(Manager.manager.mediaManager.getSpotifySearch().getTrack(trackId)));
             } catch (Exception e){
                 e.printStackTrace();
                 return null;
             }
-        }
     }
     public void loadBitmap(){
-        isLoadingBitmap = true;
-        try {
-            Bitmap bmp;
-            URL url = new URL(artWorkURL);
-            bmp =  BitmapFactory.decodeStream(url.openConnection()
-                    .getInputStream());
 
-            trackBitMap = bmp;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        isLoadingBitmap = false;
+        Thread thread = new Thread(){
+            @Override
+            public void run() {
+                isLoadingBitmap = true;
+                try {
+                    Bitmap bmp;
+                    URL url = new URL(artWorkURL);
+                    bmp =  BitmapFactory.decodeStream(url.openConnection()
+                            .getInputStream());
+
+                    trackBitMap = bmp;
+                    completedSong();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                isLoadingBitmap = false;
+            }
+        };
+        thread.start();
+
     }
 
-    public TRACK_TYPE getTrackType(){return trackType;}
+    public void completedSong(){
+        Manager.manager.mediaManager.preparedSong(this);
+    }
+
     public String getTrackTitle(){
         return trackTitle;
     }

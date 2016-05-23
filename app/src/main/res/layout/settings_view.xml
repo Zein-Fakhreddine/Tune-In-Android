@@ -9,52 +9,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/txtsoundcloud"
-        android:id="@+id/txtSoundcloud"
-        android:layout_marginLeft="42dp"
-        android:layout_marginStart="42dp"
-        android:layout_marginTop="36dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/link"
-        android:id="@+id/btnLink"
-        android:layout_below="@+id/txtSoundcloud"
-        android:layout_alignLeft="@+id/txtSoundcloud"
-        android:layout_alignStart="@+id/txtSoundcloud" />
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/pbLoading"
-        android:visibility="invisible"
-        android:layout_alignBottom="@+id/btnLink"
-        android:layout_toRightOf="@+id/btnLink"
-        android:layout_toEndOf="@+id/btnLink" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/soundcloudusername"
-        android:id="@+id/txtSoundcloudUsername"
-        android:layout_below="@+id/btnLink"
-        android:layout_alignLeft="@+id/btnLink"
-        android:layout_alignStart="@+id/btnLink" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/txttunein"
         android:id="@+id/txtTuneIn"
-        android:layout_above="@+id/swChooseRandomly"
-        android:layout_alignLeft="@+id/btnSpotifyLink"
-        android:layout_alignStart="@+id/btnSpotifyLink" />
+        android:layout_below="@+id/btnSpotifyLink"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -80,19 +39,16 @@
         android:layout_height="wrap_content"
         android:text="@string/chooserandomly"
         android:id="@+id/swChooseRandomly"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/btnLink"
-        android:layout_toEndOf="@+id/btnLink" />
+        android:layout_below="@+id/txtTuneIn"
+        android:layout_toRightOf="@+id/pbLoadingSpotify"
+        android:layout_toEndOf="@+id/pbLoadingSpotify" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/txtspotify"
-        android:id="@+id/txtSpotify"
-        android:layout_below="@+id/txtSoundcloudUsername"
-        android:layout_alignLeft="@+id/txtSoundcloudUsername"
-        android:layout_alignStart="@+id/txtSoundcloudUsername" />
+        android:id="@+id/txtSpotify" />
 
     <Button
         android:layout_width="wrap_content"

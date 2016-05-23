@@ -24,18 +24,16 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/txtSessionName"
-        android:layout_above="@+id/imgAddSong" />
+        android:layout_above="@+id/imgControl" />
 
-    <ImageButton
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imgAddSong"
-        android:background="@null"
+        android:id="@+id/imgControl"
         android:src="@mipmap/ic_launcher"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:onClick="showAddSongPopup"
         android:contentDescription="@string/add_song" />
 
     <TextView
@@ -54,8 +52,8 @@
         android:id="@+id/pbSearching"
         android:visibility="invisible"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/imgSpotify"
-        android:layout_toStartOf="@+id/imgSpotify" />
+        android:layout_toLeftOf="@+id/imgControl"
+        android:layout_toStartOf="@+id/imgControl" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -77,28 +75,5 @@
         android:layout_toRightOf="@+id/imgSong"
         android:layout_toEndOf="@+id/imgSong"
         android:contentDescription="@string/plays_or_pause_s_the_current_song" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imgSouncloud"
-        android:src="@mipmap/ic_soundcloud"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/imgAddSong"
-        android:layout_toStartOf="@+id/imgAddSong"
-        android:alpha="1"
-        android:contentDescription="@string/soundcloud" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imgSpotify"
-        android:src="@mipmap/ic_spotifyicon"
-        android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@+id/imgSouncloud"
-        android:layout_below="@+id/lstTracks"
-        android:layout_toLeftOf="@+id/imgSouncloud"
-        android:alpha="1"
-        android:contentDescription="@string/spotify" />
 
 </RelativeLayout>
