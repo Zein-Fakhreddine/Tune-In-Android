@@ -8,21 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URL;
-import java.util.ArrayList;
 
-/**
- * Created by Zein's on 3/20/2016.
- */
 public class Playlist {
 
     private String playlistName;
-    private ArrayList<Track> tracks;
     private String playlistId;
     private String trackURL;
     private Bitmap playlistArtwork;
     private int trackCount;
     public Playlist(JSONObject js){
-        tracks = new ArrayList<>();
         try{
             playlistId = js.getString("id");
             playlistName = js.getString("name");
@@ -43,6 +37,7 @@ public class Playlist {
     public Bitmap getPlaylistArtwork(){ return playlistArtwork; }
 
     public int getTrackCount(){ return trackCount; }
+
     public Bitmap loadBitmap(String bitMapurl){
         if(bitMapurl.equals("null"))
             return null;

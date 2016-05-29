@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by Zein's on 3/9/2016.
@@ -16,34 +17,37 @@ public class Track {
 
     //Track variables from JSON
     private String trackTitle;
-    private String trackArtist;
+    private ArrayList<String> trackArtists;
     private String artWorkURL;
-    private int likeCount;
-    private int playbackCount;
+    private String albumName;
     private int duration;
     private String trackId;
     private int votes;
     private Bitmap trackBitMap;
-    private boolean isStreamable;
+    private String userSubmited;
 
     private boolean isLoadingBitmap = false;
 
 
     public Track(JSONObject js){
         try{
-            Log.d("TUNEIN", "this is working");
+            votes = 0;
             trackTitle = js.getString("name");
+            trackId = js.getString("id");
+            duration = js.getInt("duration_ms");
+            trackArtists = new ArrayList<>();
+            JSONArray jArtists = js.getJSONArray("artists");
+            for(int i = 0; i < jArtists.length(); i++){
+                JSONObject jType = jArtists.getJSONObject(i);
+                trackArtists.add(jType.getString("name"));
+            }
             JSONObject jAlbum = js.getJSONObject("album");
+            albumName = jAlbum.getString("name");
             JSONArray jImages = jAlbum.getJSONArray("images");
             for(int i = 0; i < jImages.length(); i++){
                 JSONObject jType = jImages.getJSONObject(i);
                 if(jType.getInt("width") == 300 || jType.getInt("height") == 300)
                     this.artWorkURL = jType.getString("url");
-                Log.d("TUNEIN","ARTwork: " + this.artWorkURL);
-                playbackCount = -1;
-                trackId = js.getString("id");
-                duration = js.getInt("duration_ms");
-                isStreamable = true;
             }
             loadBitmap();
         } catch (Exception e){
@@ -62,11 +66,11 @@ public class Track {
         this.votes = votes;
     }
 
-    public void setIsLoadingBitmap(boolean isLoadingBitmap){this.isLoadingBitmap = isLoadingBitmap;}
-
-    public static Track getTrack(String trackId){
+    public static Track getTrack(String trackId, String username){
             try{
-                return new Track(new JSONObject(Manager.manager.mediaManager.getSpotifySearch().getTrack(trackId)));
+                Track track = new Track(new JSONObject(Manager.manager.mediaManager.getSpotifySearch().getTrack(trackId)));
+                track.userSubmited = username;
+                return track;
             } catch (Exception e){
                 e.printStackTrace();
                 return null;
@@ -104,23 +108,38 @@ public class Track {
         return trackTitle;
     }
 
-    public String getTrackArtist(){
-        return trackArtist;
+    public ArrayList<String> getTrackArtist(){
+        return trackArtists;
+    }
+
+    public String getArtistString(){
+        String artists = "";
+        for(int i = 0; i < this.getTrackArtist().size(); i++){
+            if(i == 0)
+                artists += this.getTrackArtist().get(i);
+            else
+                artists += ", " + this.getTrackArtist().get(i);
+        }
+        return artists;
     }
 
     public String getArtWorkURL(){
         return artWorkURL;
     }
 
-    public int getLikeCount(){
-        return likeCount;
-    }
+    public String getAlbumName(){ return albumName; }
 
-    public int getPlaybackCount(){
-        return playbackCount;
-    }
 
     public int getDuration(){return duration;}
+
+    public String getDurationToTime(){
+        double minutes = duration / 60000.0;
+        System.out.println("MINUTES: " + minutes);
+        double decimal = minutes - ((int) minutes);
+        double seconds = decimal * 60;
+
+        return ((int) minutes) + ":" + ((Math.round(seconds) < 10) ? "0" : "") + Math.round(seconds);
+    }
 
     public String getTrackId(){
         return trackId;
@@ -134,7 +153,5 @@ public class Track {
         return trackBitMap;
     }
 
-    public boolean isStreamable(){return isStreamable;}
-
-    public boolean isLoadingBitmap(){return isLoadingBitmap;}
+    public String getUserSubmited(){ return  userSubmited; }
 }

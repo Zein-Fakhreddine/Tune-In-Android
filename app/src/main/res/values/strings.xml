@@ -25,4 +25,5 @@
     <string name="userProfile">UserProfile</string>
     <string name="usernamesearch">Name</string>
     <string name="count">Count</string>
+    <string name="search">search</string>
 </resources>

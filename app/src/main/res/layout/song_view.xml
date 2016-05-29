@@ -34,4 +34,16 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Small Text"
+        android:id="@+id/txtSubmitedby"
+        android:visibility="invisible"
+        android:layout_alignBottom="@+id/imgIcon"
+        android:layout_toRightOf="@+id/imgIcon"
+        android:layout_toEndOf="@+id/imgIcon"
+        android:alpha=".7" />
+
 </RelativeLayout>

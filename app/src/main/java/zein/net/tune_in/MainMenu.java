@@ -41,6 +41,12 @@ public class MainMenu extends Activity{
         setContentView(R.layout.activit_main_menu);
         initManager();
         initView();
+        try{
+            String reason = getIntent().getExtras().getString("reason");
+            if(reason != null && reason.equals("host"))
+                error("The host stoped the session");
+        } catch (NullPointerException e){}
+
     }
 
     @Override
@@ -74,11 +80,6 @@ public class MainMenu extends Activity{
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        Spotify.destroyPlayer(this);
-        super.onDestroy();
-    }
 
     private void initManager(){
         manager = new Manager();
@@ -123,8 +124,8 @@ public class MainMenu extends Activity{
             }
 
             final String name = txtKey.getText().toString();
-            if(name.length() == 0 || getOnlySpaces(name)){
-                error("Fill in the session name");
+            if(name.length() != 5 || getOnlySpaces(name)){
+                error("They key must be 5 characters");
                 return;
             }
 
@@ -299,8 +300,11 @@ public class MainMenu extends Activity{
                 manager.setServerKey(sessionKey);
                 setLoadMessage("Joining the server");
                 String code = manager.sendUser(manager.getHostKey(), manager.currentUser);
-                if(code.equals("gg"))
+                if(code.startsWith("gg")){
+                    manager.currentIteration = Integer.parseInt(code.split("&ITE=")[1].split("&SES=")[0]);
+                    manager.sessionName = code.split("&SES=")[1];
                     loadTuneIn();
+                }
                 else{
                     error((code.equals("ht")) ? "This username has already been taken" : "there was an error adding the user");
                     cancelLoading();

@@ -29,7 +29,6 @@ public class Manager {
     public boolean hasUserChoseSong = false;
     public boolean hasUserVotedForSong = false;
     public boolean isServer = false;
-    public boolean isChoosing = false;
     public boolean isLinkedWithSpotify = false;
     public int currentIteration = 0;
     public String spotifyToken = "";
@@ -73,16 +72,16 @@ public class Manager {
         sendData("/uservotedsong" + "&name=" + convertToSendableString(user.getUserName()) + "&id=" + user.getVotedTrack().getTrackId() + "&key=" + serverKey);
     }
 
-    public String getChosenSongs(String serverKey){
-        return getData("/getchosensongs" + "&key=" + serverKey).toString();
-    }
-
-    public String getVotes(String serverKey){
-        return getData("/getvotes" + "&key=" + serverKey).toString();
+    public String getServerInfo(String serverKey){
+        return getData("/serverinfo" + "&key=" + serverKey).toString();
     }
 
     public String sendRestart(String serverKey, boolean isServer, User user){
         return getData("/restart" + "&name=" + user.getUserName() + "&server=" + String.valueOf(isServer) + "&key=" + serverKey).toString();
+    }
+
+    public void sendStopedSession(String serverKey){
+        sendData("/stopsession" + "&key=" + serverKey);
     }
     public String getHostKey(){
         return hostKey;

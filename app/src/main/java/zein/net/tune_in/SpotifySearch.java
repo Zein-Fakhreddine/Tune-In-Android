@@ -108,7 +108,7 @@ public class SpotifySearch {
             con.setRequestProperty("User-Agent", Manager.USER_AGENT);
             con.setRequestProperty("Accept","application/json");
             con.setRequestProperty("Authorization", "Bearer " + Manager.manager.spotifyToken);
-            int responseCode = con.getResponseCode();
+            con.getResponseCode();
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
             String inputLine;

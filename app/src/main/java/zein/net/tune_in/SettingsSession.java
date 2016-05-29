@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -33,9 +34,6 @@ import java.util.ArrayList;
 
 import static zein.net.tune_in.Manager.manager;
 
-/**
- * Created by Zein's on 3/18/2016.
- */
 public class SettingsSession extends Activity implements View.OnClickListener {
 
     private Button btnLink, btnSpotifyLink;
@@ -53,6 +51,12 @@ public class SettingsSession extends Activity implements View.OnClickListener {
         initView();
         initManager();
         playlists = new ArrayList<>();
+
+        try{
+            if(getIntent().getExtras().getString("reason").equals("link"))
+                btnSpotifyLink.performClick();
+
+        } catch (NullPointerException e){}
     }
 
     private void initView() {
@@ -80,10 +84,8 @@ public class SettingsSession extends Activity implements View.OnClickListener {
         Log.d("TUNEIN", String.valueOf(requestCode));
         // Check if result comes from the correct activity
         if (requestCode == MediaManager.REQUEST_CODE) {
-            Log.d("TUNEIN", "GOODIN");
             final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                Log.d("TUNEIN", "Best");
                 Config playerConfig = new Config(this, response.getAccessToken(), MediaManager.SPOTIFY_CLIENT_ID);
                 Log.d("TUNEIN", response.getAccessToken());
                 Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
@@ -92,13 +94,14 @@ public class SettingsSession extends Activity implements View.OnClickListener {
                         manager.spotifyToken = response.getAccessToken();
                         manager.mediaManager.setSpotifyPlayer(player);
 
-                        Log.d("TUNEIN", "Connected");
                         manager.isLinkedWithSpotify = true;
                         pbSpotifyLoading.setVisibility(View.INVISIBLE);
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
+                        throwable.printStackTrace();
+                        pbSpotifyLoading.setVisibility(View.INVISIBLE);
                         Log.e("TUNEIN", "Could not initialize player: " + throwable.getMessage());
                         error("Unexpected error occured");
                     }
@@ -145,6 +148,9 @@ public class SettingsSession extends Activity implements View.OnClickListener {
 
 
     private AlertDialog.Builder showPlaylistSearchDialog() {
+
+        if(pbSpotifyLoading.getVisibility() == View.VISIBLE)
+            return null;
         final AlertDialog.Builder nameDialog = new AlertDialog.Builder(this);
         nameDialog.setTitle("Search for a Spotify playlist: ");
 
@@ -185,6 +191,17 @@ public class SettingsSession extends Activity implements View.OnClickListener {
                     JSONObject trackJson = fullJson.getJSONObject("playlists");
                     JSONArray jArray = trackJson.getJSONArray("items");
 
+                    if(jArray.length() == 0){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(SettingsSession.this, "No playlists found with the name", Toast.LENGTH_SHORT).show();
+                                pbSpotifyLoading.setVisibility(View.INVISIBLE);
+                            }
+                        });
+
+                        return;
+                    }
                     for (int i = 0; i < jArray.length(); i++) {
                         JSONObject js = jArray.getJSONObject(i);
 

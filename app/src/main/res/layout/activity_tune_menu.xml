@@ -10,12 +10,9 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/session_name"
         android:id="@+id/txtSessionName"
-        android:layout_marginTop="29dp"
-        android:layout_marginLeft="31dp"
-        android:layout_marginStart="31dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignRight="@+id/pbSearching"
+        android:layout_alignEnd="@+id/pbSearching" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -23,8 +20,8 @@
         android:id="@+id/lstTracks"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/txtSessionName"
-        android:layout_above="@+id/imgControl" />
+        android:layout_above="@+id/imgControl"
+        android:layout_below="@+id/etxtSongSearch" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -43,8 +40,7 @@
         android:text="@string/key"
         android:id="@+id/txtKey"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/imgAddSong"
-        android:layout_toStartOf="@+id/imgAddSong" />
+       />
 
     <ProgressBar
         android:layout_width="wrap_content"
@@ -75,5 +71,28 @@
         android:layout_toRightOf="@+id/imgSong"
         android:layout_toEndOf="@+id/imgSong"
         android:contentDescription="@string/plays_or_pause_s_the_current_song" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgSearch"
+        android:src="@mipmap/ic_search"
+        android:layout_alignBottom="@+id/txtSessionName"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="@string/search" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etxtSongSearch"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/pbSearching"
+        android:layout_toLeftOf="@id/pbSearching"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/txtSessionName"
+        android:inputType="text" />
 
 </RelativeLayout>

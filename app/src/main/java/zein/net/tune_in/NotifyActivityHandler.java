@@ -11,10 +11,7 @@ public class NotifyActivityHandler extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("TUNEIN", "Clicked");
-        if (getIntent() != null && getIntent().getBooleanExtra("Pause", false)) {
-            // Do your onclick code.\
-            Log.d("TUNEIN", "No it was realy clicked");
-        }
+        Log.d("TUNEIN", "Omg I cant believe this actually worked");
     }
+    
 }

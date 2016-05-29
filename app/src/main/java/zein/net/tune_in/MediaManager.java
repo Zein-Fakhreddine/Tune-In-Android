@@ -5,12 +5,11 @@ import android.util.Log;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
+import com.spotify.sdk.android.player.Spotify;
 
 import org.json.JSONObject;
 
-/**
- * Created by Zein's on 5/2/2016.
- */
+
 public class MediaManager {
 
     //Static Variables that have regard to Spotify
@@ -69,21 +68,22 @@ public class MediaManager {
         spotifyPlayer.play("spotify:track:" + trackId);
         isSongPlaying = true;
         isSongPaused = false;
+        currentPlayingTrack = track;
         spotifyThread = new Thread() {
             @Override
             public void run() {
                 while (spotifyPlayer != null && !spotifyPlayer.isShutdown()) {
-                    if(!isSongPlaying)
+                    if(!isSongPlaying){
+                        Log.d("TUNEIN", "So this just happened");
                         return;
-                    if (isSongPaused)
-                        continue;
+                    }
 
                     spotifyPlayer.getPlayerState(new PlayerStateCallback() {
                         @Override
                         public void onPlayerState(PlayerState playerState) {
                             if(!isSongPlaying)
                                 return;
-                            if (Math.abs(playerState.positionInMs - playerState.durationInMs) < 700 || playerState.positionInMs == playerState.durationInMs) {
+                            if (Math.abs(playerState.positionInMs - playerState.durationInMs) < 700 && (playerState.positionInMs != 0 || playerState.durationInMs != 0)) {
                                 completedSong();
                                 spotifyThread = null;
                             }
@@ -98,7 +98,6 @@ public class MediaManager {
             }
         };
         spotifyThread.start();
-        currentPlayingTrack = track;
         return true;
     }
 
@@ -121,35 +120,10 @@ public class MediaManager {
     private void completedSong() {
         isSongPlaying = false;
         isSongPaused = false;
-        currentPlayingTrack = null;
         oFP.finishedPlaying(this);
+        currentPlayingTrack = null;
     }
 
-    /**
-     * Checks if a given string can be converted to an integer
-     *
-     * @param str The given String
-     * @return Returns true if it can be converted or false if it can not
-     */
-    public boolean isInteger(String str) {
-        if (str == null)
-            return false;
-        int length = str.length();
-        if (length == 0)
-            return false;
-        int i = 0;
-        if (str.charAt(0) == '-') {
-            if (length == 1)
-                return false;
-            i = 1;
-        }
-        for (; i < length; i++) {
-            char c = str.charAt(i);
-            if (c < '0' || c > '9')
-                return false;
-        }
-        return true;
-    }
 
     public boolean isSongPlaying() {
         return isSongPlaying;
@@ -196,7 +170,8 @@ public class MediaManager {
     }
 
     public void preparedSong(Track track) {
-        oPS.preparedSong(track);
+        if(oPS != null)
+            oPS.preparedSong(track);
     }
 
     public Track getCurrentPlayingTrack() {
@@ -208,9 +183,10 @@ public class MediaManager {
      * shutdowns the Soundcloud and Spotify players
      */
     public void stop() {
-        if (spotifyPlayer != null || !spotifyPlayer.isShutdown()) {
+        if (spotifyPlayer != null) {
             spotifyPlayer.pause();
             spotifyPlayer.shutdown();
+            Spotify.destroyPlayer(spotifyPlayer);
             spotifyPlayer = null;
         }
     }
