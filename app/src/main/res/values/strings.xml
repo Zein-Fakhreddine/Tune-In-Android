@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Tune-In</string>
-    <string name="TuneInSession">Tune In</string>
+    <string name="app_name">Dynamic Dj</string>
+    <string name="DynamicDjSession">Dynamic Dj</string>
     <string name="add_song">Add Song</string>
     <string name="SettingsSession">Settings</string>
     <string name="plays_or_pause_s_the_current_song">Plays or pause\'s the current song</string>
@@ -14,10 +14,10 @@
     <string name="txtsoundcloud">Soundcloud:</string>
     <string name="link">Link With Soundcloud</string>
     <string name="soundcloudusername">Current Username:</string>
-    <string name="txttunein">Tune In:</string>
-    <string name="backupplaylist">Set Backup Playlist</string>
+    <string name="txtdynamicdj">Dynamic Dj:</string>
+    <string name="backupplaylist">Set Backup: </string>
     <string name="currentplaylist">Current Playlist:</string>
-    <string name="chooserandomly">Choose Randomly</string>
+    <string name="shuffle">Shuffle</string>
     <string name="txtspotify">Spotify:</string>
     <string name="spotifylink">Link With Spotify</string>
     <string name="SongIcon">SongIcon</string>
@@ -26,4 +26,34 @@
     <string name="usernamesearch">Name</string>
     <string name="count">Count</string>
     <string name="search">search</string>
+    <string name="playlist_artwork">Playlist Artwork</string>
+    <string name="playlist_name">Playlist Name</string>
+    <string name="playlist_artists">Playlist Artists</string>
+    <string name="track_count">Track Count</string>
+    <string name="track_name">Track Name</string>
+    <string name="track_artists">Track Artists</string>
+    <string name="album_name">Album Name</string>
+    <string name="track_duration">Track duration</string>
+    <string name="track_artwork">Track Artwork</string>
+    <string name="explicit">Explicit</string>
+    <string name="allow_explicit">Allow Explicit Tracks</string>
+    <string name="filter">Filter Explicit Tracks</string>
+    <string name="playlist">Playlist</string>
+    <string name="album">Album</string>
+    <string name="track">Track</string>
+    <string name="min_track_time">Min. Track Time</string>
+    <string name="max_track_time">Max. Track Time</string>
+    <string name="filter_tracks">Filter Tracks</string>
+    <string name="name">Name</string>
+    <string name="keyhint">Key (leave empty to show sessions on your network)</string>
+    <string name="duration">"Duration: "</string>
+    <string name="Album">"Album: "</string>
+    <string name="artists">"Artists: "</string>
+    <string name="trackname">"Name: "</string>
+    <string name="host">Host:</string>
+    <string name="users">Users:</string>
+    <string name="explicitc">Explicit:</string>
+    <string name="chosenby">"Chosen by: "</string>
+
+
 </resources>

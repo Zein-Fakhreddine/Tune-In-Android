@@ -1,16 +1,26 @@
-package zein.net.tune_in;
+package zein.net.dynamic_dj;
 
+import android.media.AudioManager;
 import android.util.Log;
 
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
-import com.spotify.sdk.android.player.Spotify;
 
 import org.json.JSONObject;
 
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT;
+
 
 public class MediaManager {
+
+    //Backup types that can be played if no song is chosen
+    public enum BACKUP_TYPE{
+        PLAYLIST,
+        ALBUM,
+        TRACK,
+        UNDEFINED
+    };
 
     //Static Variables that have regard to Spotify
     public static final String SPOTIFY_CLIENT_ID = "d6d5380ae25943f9ba03d499b0260675";
@@ -31,9 +41,6 @@ public class MediaManager {
     //Event used to handle when the current playing song has been finished
     private onFinishedPlaying oFP;
 
-    //Event used to handle when the song to play is done
-    private onPreparedSong oPS;
-
     //The thread that handles when a Spotify song ends
     private Thread spotifyThread;
 
@@ -43,11 +50,20 @@ public class MediaManager {
     //The playlist to play from if no song is chosen
     private Playlist backupPlaylist;
 
+    //The Album to play from if no song is chosen
+    private  Album backupAlbum;
+
+    //The track to play from if no song is chosen
+    private Track backupTrack;
+
     //Choose randomly from the backup playlist or in order
     private boolean choosingRandomlyFromBp = false;
 
     //The current song the bp is on
     private int currentBpSong = 0;
+
+    //The current backup type that the user has chose
+    private BACKUP_TYPE currentBackupType = BACKUP_TYPE.UNDEFINED;
 
     public MediaManager() {
         isSongPlaying = false;
@@ -69,14 +85,26 @@ public class MediaManager {
         isSongPlaying = true;
         isSongPaused = false;
         currentPlayingTrack = track;
+       AudioManager.OnAudioFocusChangeListener afChangeListener = new AudioManager.OnAudioFocusChangeListener(){
+           @Override
+           public void onAudioFocusChange(int focusChange) {
+               Log.d("TUNEIN", "Audio focus changed");
+               if (focusChange == AUDIOFOCUS_LOSS_TRANSIENT) {
+                   pauseSong();
+               } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                   startSong();
+               } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                   pauseSong();
+               }
+           }
+       };
+
         spotifyThread = new Thread() {
             @Override
             public void run() {
                 while (spotifyPlayer != null && !spotifyPlayer.isShutdown()) {
-                    if(!isSongPlaying){
-                        Log.d("TUNEIN", "So this just happened");
+                    if(!isSongPlaying)
                         return;
-                    }
 
                     spotifyPlayer.getPlayerState(new PlayerStateCallback() {
                         @Override
@@ -101,10 +129,13 @@ public class MediaManager {
         return true;
     }
 
-    public boolean playPlaylist() {
+    private boolean playPlaylist() {
         try {
-            currentBpSong = (choosingRandomlyFromBp) ? ((int) (Math.random() * backupPlaylist.getTrackCount())) : ((currentBpSong != backupPlaylist.getTrackCount()) ? currentBpSong++ : 0);
-            Track track = new Track(new JSONObject(spSearch.getPlaylistTrack(backupPlaylist.getTrackURL(), currentBpSong)));
+            Track track = new Track(new JSONObject(spSearch.getPlaylistTrack(backupPlaylist.getTrackURL(), (choosingRandomlyFromBp) ? ((int) (Math.random() * backupPlaylist.getTrackCount())) : currentBpSong)));
+            if((currentBpSong + 1) >= backupPlaylist.getTrackCount())
+                currentBpSong = 0;
+            else
+                currentBpSong++;
             return playSong(track);
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,6 +144,49 @@ public class MediaManager {
         return false;
     }
 
+    private boolean playAlbum(){
+        try {
+            int random = ((int) ((backupAlbum.getTrackCount() == -1) ?  Math.random() * 10 : Math.random() * backupAlbum.getTrackCount()));
+
+            Track track = new Track(new JSONObject(spSearch.getAlbumTrack(backupAlbum.getTracksURL(), ((choosingRandomlyFromBp) ?  random : currentBpSong))));
+            if((currentBpSong + 1) >= backupAlbum.getTrackCount())
+                currentBpSong = 0;
+            else
+                currentBpSong++;
+            return playSong(track);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private boolean playTrack(){
+        try {
+            return playSong(backupTrack);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean playBackup(){
+        try{
+            switch (currentBackupType){
+                case PLAYLIST:
+                    return playPlaylist();
+                case ALBUM:
+                    return playAlbum();
+                case TRACK:
+                    return playTrack();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return false;
+    }
     /**
      * Is called when the song is completed
      * calls the on finished playing event
@@ -123,7 +197,6 @@ public class MediaManager {
         oFP.finishedPlaying(this);
         currentPlayingTrack = null;
     }
-
 
     public boolean isSongPlaying() {
         return isSongPlaying;
@@ -139,6 +212,22 @@ public class MediaManager {
 
     public void setBackupPlaylist(Playlist backupPlaylist) {
         this.backupPlaylist = backupPlaylist;
+        currentBpSong = 0;
+        currentBackupType = BACKUP_TYPE.PLAYLIST;
+    }
+
+    public void setCurrentPlayingTrack(Track currentPlayingTrack){ this.currentPlayingTrack = currentPlayingTrack;}
+
+    public void setBackupAlbum(Album backupAlbum){
+        this.backupAlbum = backupAlbum;
+        currentBpSong = 0;
+        currentBackupType = BACKUP_TYPE.ALBUM;
+    }
+
+    public void setBackupTrack(Track backupTrack){
+        this.backupTrack = backupTrack;
+        currentBpSong = 0;
+        currentBackupType = BACKUP_TYPE.TRACK;
     }
 
     public void setChoosingRandomlyFromBp(boolean choosingRandomlyFromBp) {
@@ -153,6 +242,9 @@ public class MediaManager {
         return backupPlaylist;
     }
 
+    public Album getBackupAlbum(){ return backupAlbum; }
+
+    public Track getBackupTrack(){ return backupTrack; }
     public SpotifySearch getSpotifySearch() {
         return spSearch;
     }
@@ -161,18 +253,12 @@ public class MediaManager {
         return choosingRandomlyFromBp;
     }
 
+    public BACKUP_TYPE getCurrentBackupType(){ return currentBackupType; }
+
     public void setOnFinishedPlaying(onFinishedPlaying oFP) {
         this.oFP = oFP;
     }
 
-    public void setOnPreparedSong(onPreparedSong oPS) {
-        this.oPS = oPS;
-    }
-
-    public void preparedSong(Track track) {
-        if(oPS != null)
-            oPS.preparedSong(track);
-    }
 
     public Track getCurrentPlayingTrack() {
         return currentPlayingTrack;
@@ -183,12 +269,9 @@ public class MediaManager {
      * shutdowns the Soundcloud and Spotify players
      */
     public void stop() {
-        if (spotifyPlayer != null) {
+        if (spotifyPlayer != null)
             spotifyPlayer.pause();
-            spotifyPlayer.shutdown();
-            Spotify.destroyPlayer(spotifyPlayer);
-            spotifyPlayer = null;
-        }
+
     }
 
     /**
@@ -197,12 +280,10 @@ public class MediaManager {
      * @return Returns true if the song was paused correctly
      */
     public boolean pauseSong() {
-        Log.d("TUNEIN", "This was called");
         if (!isSongPlaying || isSongPaused || currentPlayingTrack == null)
             return false;
         if (spotifyPlayer != null && !spotifyPlayer.isShutdown())
             spotifyPlayer.pause();
-        Log.d("TUNEIN", "GOT HERE");
         isSongPaused = true;
         return true;
     }

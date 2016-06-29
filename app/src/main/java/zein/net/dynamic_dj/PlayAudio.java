@@ -1,9 +1,9 @@
-package zein.net.tune_in;
+package zein.net.dynamic_dj;
 
 import android.app.IntentService;
 import android.content.Intent;
 
-import static zein.net.tune_in.Manager.manager;
+import static zein.net.dynamic_dj.Manager.manager;
 
 
 public class PlayAudio extends IntentService {

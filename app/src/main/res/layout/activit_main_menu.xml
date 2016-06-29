@@ -16,33 +16,23 @@
         android:layout_marginTop="32dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textColor="@color/colorPrimary" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/etxtSessionName"
         android:layout_marginTop="35dp"
-        android:singleLine="true"
-        android:maxLength="20"
+        android:maxLines="1"
+        android:maxLength="15"
         android:layout_below="@+id/txtSessionName"
         android:layout_alignLeft="@+id/txtSessionName"
         android:layout_alignStart="@+id/txtSessionName"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:inputType="text" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/host_session"
-        android:id="@+id/btnHost"
-        android:layout_below="@+id/etxtSessionName"
-        android:layout_alignLeft="@+id/etxtSessionName"
-        android:layout_alignStart="@+id/etxtSessionName"
-        android:layout_marginTop="45dp"
-        android:onClick="onClick"
-        />
+        android:inputType="text"
+        android:hint="@string/name" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -52,13 +42,14 @@
         android:id="@+id/txtKey"
         android:layout_centerVertical="true"
         android:layout_alignLeft="@+id/btnHost"
-        android:layout_alignStart="@+id/btnHost" />
+        android:layout_alignStart="@+id/btnHost"
+        android:textColor="@color/colorPrimary" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/etxtAddress"
-        android:singleLine="true"
+        android:maxLines="1"
         android:maxLength="5"
         android:layout_below="@+id/txtKey"
         android:layout_alignLeft="@+id/txtKey"
@@ -66,7 +57,8 @@
         android:layout_marginTop="49dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:inputType="textCapCharacters" />
+        android:inputType="textCapCharacters"
+        android:hint="@string/keyhint" />
 
     <Button
         android:layout_width="wrap_content"
@@ -100,5 +92,30 @@
         android:layout_alignBottom="@+id/pbLoading"
         android:layout_toLeftOf="@+id/pbLoading"
         android:layout_toStartOf="@+id/pbLoading" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/host_session"
+        android:id="@+id/btnHost"
+        android:layout_marginTop="46dp"
+        android:onClick="onClick"
+        android:layout_below="@+id/etxtSessionName"
+        android:layout_alignLeft="@+id/etxtSessionName"
+        android:layout_alignStart="@+id/etxtSessionName" />
+
+    <Switch
+        android:text="@string/filter_tracks"
+        android:onClick="onClick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btnHost"
+        android:layout_toRightOf="@+id/btnHost"
+        android:layout_toEndOf="@+id/btnHost"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:id="@+id/swFilter" />
+
+
 
 </RelativeLayout>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "364545390594",
+    "firebase_url": "https://tune-in-f6dec.firebaseio.com",
+    "project_id": "tune-in-f6dec",
+    "storage_bucket": "tune-in-f6dec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364545390594:android:2c0e727dbfc30955",
+        "android_client_info": {
+          "package_name": "zein.net.dynamic_dj"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364545390594-qohu9lflrefikt6neupfdtcd6qbu217l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "zein.net.dynamic_dj",
+            "certificate_hash": "6C36FBB8A31E86B9F94F4A05C1FBEBA8F3C9386C"
+          }
+        },
+        {
+          "client_id": "364545390594-i35igjgijog8d5ga8pnvf281md3j5fot.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARx-Yhw4ahlHMrW8QggAPkYepc-uFh07M"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364545390594-i35igjgijog8d5ga8pnvf281md3j5fot.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

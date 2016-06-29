@@ -1,4 +1,4 @@
-package zein.net.tune_in;
+package zein.net.dynamic_dj;
 
 import org.junit.Test;
 

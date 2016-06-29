@@ -4,50 +4,54 @@
     android:layout_height="match_parent"
     android:weightSum="1">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/track_name"
+        android:id="@+id/txtPlaylistName"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/track_artists"
+        android:id="@+id/txtPlaylistArtists"
+        android:layout_below="@+id/txtPlaylistName"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/album_name"
+        android:id="@+id/txtAlbumName"
+        android:layout_below="@+id/txtPlaylistArtists"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/track_duration"
+        android:id="@+id/txtPlaylistDuration"
+        android:layout_below="@+id/txtAlbumName"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
     <ImageView
         android:layout_width="92dp"
         android:layout_height="93dp"
-        android:id="@+id/imgAlbumArtwork"
-        android:src="@mipmap/ic_launcher" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Track Name"
-        android:id="@+id/txtTrackName"
+        android:id="@+id/imgPlaylistArtwork"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="@string/track_artwork"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/imgAlbumArtwork"
-        android:layout_toEndOf="@+id/imgAlbumArtwork" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Track Artists"
-        android:id="@+id/txtTrackArtists"
-        android:layout_below="@+id/txtTrackName"
-        android:layout_toRightOf="@+id/imgAlbumArtwork"
-        android:layout_toEndOf="@+id/imgAlbumArtwork" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Album Name"
-        android:id="@+id/txtAlbumName"
-        android:layout_below="@+id/txtTrackArtists"
-        android:layout_toRightOf="@+id/imgAlbumArtwork"
-        android:layout_toEndOf="@+id/imgAlbumArtwork" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Track duration"
-        android:id="@+id/txtTrackDuration"
-        android:layout_below="@+id/txtAlbumName"
-        android:layout_toRightOf="@+id/imgAlbumArtwork"
-        android:layout_toEndOf="@+id/imgAlbumArtwork" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

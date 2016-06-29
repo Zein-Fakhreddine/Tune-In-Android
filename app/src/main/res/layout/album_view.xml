@@ -18,20 +18,9 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/usernamesearch"
-        android:id="@+id/txtPlaylistName"
+        android:id="@+id/txtAlbumName"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/imgArtwork"
         android:layout_toEndOf="@+id/imgArtwork" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/count"
-        android:id="@+id/txtTrackCount"
-        android:layout_marginRight="54dp"
-        android:layout_marginEnd="54dp"
-        android:layout_below="@+id/txtPlaylistName"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
 </RelativeLayout>

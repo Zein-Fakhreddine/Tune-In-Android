@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1">
+
+    <ImageView
+        android:layout_width="92dp"
+        android:layout_height="93dp"
+        android:id="@+id/imgPlaylistArtwork"
+        android:src="@mipmap/ic_launcher"
+        android:layout_alignBottom="@+id/txtPlaylistCount"
+        android:contentDescription="@string/playlist_artwork" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/playlist_name"
+        android:id="@+id/txtPlaylistName"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/track_count"
+        android:id="@+id/txtPlaylistCount"
+        android:layout_below="@+id/txtPlaylistName"
+        android:layout_toRightOf="@+id/imgPlaylistArtwork"
+        android:layout_toEndOf="@+id/imgPlaylistArtwork" />
+
+</RelativeLayout>

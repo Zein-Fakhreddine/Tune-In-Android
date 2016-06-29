@@ -1,4 +1,4 @@
-package zein.net.tune_in;
+package zein.net.dynamic_dj;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,13 +20,14 @@ public class Track {
     private ArrayList<String> trackArtists;
     private String artWorkURL;
     private String albumName;
+    private String albumId;
     private int duration;
     private String trackId;
     private int votes;
     private Bitmap trackBitMap;
     private String userSubmited;
-
-    private boolean isLoadingBitmap = false;
+    private boolean isExplicit;
+    public onLoadedArtwork oLA;
 
 
     public Track(JSONObject js){
@@ -35,6 +36,7 @@ public class Track {
             trackTitle = js.getString("name");
             trackId = js.getString("id");
             duration = js.getInt("duration_ms");
+            isExplicit = js.getBoolean("explicit");
             trackArtists = new ArrayList<>();
             JSONArray jArtists = js.getJSONArray("artists");
             for(int i = 0; i < jArtists.length(); i++){
@@ -43,6 +45,7 @@ public class Track {
             }
             JSONObject jAlbum = js.getJSONObject("album");
             albumName = jAlbum.getString("name");
+            albumId = jAlbum.getString("id");
             JSONArray jImages = jAlbum.getJSONArray("images");
             for(int i = 0; i < jImages.length(); i++){
                 JSONObject jType = jImages.getJSONObject(i);
@@ -54,11 +57,6 @@ public class Track {
             e.printStackTrace();
             Log.d("TUNEIN", "error creating track");
         }
-    }
-
-
-    public void addVote(){
-        votes++;
     }
 
 
@@ -76,32 +74,37 @@ public class Track {
                 return null;
             }
     }
-    public void loadBitmap(){
 
+    public static Track getTrack(String trackId){
+        return getTrack(trackId, null);
+    }
+
+    public void loadBitmap(){
         Thread thread = new Thread(){
             @Override
             public void run() {
-                isLoadingBitmap = true;
                 try {
-                    Bitmap bmp;
                     URL url = new URL(artWorkURL);
-                    bmp =  BitmapFactory.decodeStream(url.openConnection()
+                    trackBitMap =  BitmapFactory.decodeStream(url.openConnection()
                             .getInputStream());
-
-                    trackBitMap = bmp;
-                    completedSong();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                isLoadingBitmap = false;
+                completedSong(true);
+
             }
         };
         thread.start();
 
     }
 
-    public void completedSong(){
-        Manager.manager.mediaManager.preparedSong(this);
+    public void completedSong(boolean loaded){
+        if(oLA != null && this != null)
+            oLA.onLoaded(loaded);
+    }
+
+    public void setOnLoadedArtworkListener(onLoadedArtwork oLa){
+        this.oLA = oLa;
     }
 
     public String getTrackTitle(){
@@ -154,4 +157,10 @@ public class Track {
     }
 
     public String getUserSubmited(){ return  userSubmited; }
+
+    public boolean isExplicit(){ return isExplicit; }
+    public interface onLoadedArtwork{
+            void onLoaded(boolean loaded);
+    }
+
 }

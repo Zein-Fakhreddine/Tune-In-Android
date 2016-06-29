@@ -20,7 +20,7 @@
         android:text="Small Text"
         android:maxLines="2"
         android:maxLength="40"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/imgIcon"
         android:layout_toEndOf="@+id/imgIcon" />
@@ -45,5 +45,21 @@
         android:layout_toRightOf="@+id/imgIcon"
         android:layout_toEndOf="@+id/imgIcon"
         android:alpha=".7" />
+
+    <TextView
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtExplicit"
+        android:ellipsize="none"
+        android:maxLines="1"
+        android:scrollHorizontally="false"
+        android:alpha=".7"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_alignBaseline="@+id/txtSongName"
+        android:layout_alignBottom="@+id/txtSongName"
+        android:layout_toRightOf="@+id/txtSongName"
+        android:layout_toEndOf="@+id/txtSongName" />
 
 </RelativeLayout>

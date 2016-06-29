@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/txttunein"
+        android:text="@string/txtdynamicdj"
         android:id="@+id/txtTuneIn"
         android:layout_below="@+id/btnSpotifyLink"
         android:layout_alignParentLeft="true"
@@ -22,7 +22,9 @@
         android:id="@+id/btnBackupPlaylist"
         android:layout_alignTop="@+id/swChooseRandomly"
         android:layout_alignLeft="@+id/txtTuneIn"
-        android:layout_alignStart="@+id/txtTuneIn" />
+        android:layout_alignStart="@+id/txtTuneIn"
+        android:layout_toLeftOf="@+id/pbLoadingSpotify"
+        android:layout_toStartOf="@+id/pbLoadingSpotify" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,15 +35,6 @@
         android:layout_below="@+id/btnBackupPlaylist"
         android:layout_alignLeft="@+id/btnBackupPlaylist"
         android:layout_alignStart="@+id/btnBackupPlaylist" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/chooserandomly"
-        android:id="@+id/swChooseRandomly"
-        android:layout_below="@+id/txtTuneIn"
-        android:layout_toRightOf="@+id/pbLoadingSpotify"
-        android:layout_toEndOf="@+id/pbLoadingSpotify" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -67,5 +60,14 @@
         android:layout_alignTop="@+id/btnSpotifyLink"
         android:layout_toRightOf="@+id/btnSpotifyLink"
         android:layout_toEndOf="@+id/btnSpotifyLink" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/shuffle"
+        android:id="@+id/swChooseRandomly"
+        android:layout_below="@+id/txtTuneIn"
+        android:layout_toRightOf="@+id/btnBackupPlaylist"
+        android:layout_toEndOf="@+id/btnBackupPlaylist" />
 
 </RelativeLayout>
